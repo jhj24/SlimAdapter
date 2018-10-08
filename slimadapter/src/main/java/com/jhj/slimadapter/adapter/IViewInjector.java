@@ -1,4 +1,4 @@
-package com.jhj.adapterdemo.adapter;
+package com.jhj.slimadapter.adapter;
 
 import android.graphics.drawable.Drawable;
 import android.view.View;

@@ -1,11 +1,10 @@
-package com.jhj.adapterdemo.adapter;
+package com.jhj.slimadapter.adapter;
 
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 /**
  * Created by jhj on 18-10-6.
@@ -28,9 +27,9 @@ public abstract class SlimViewHolder<D> extends RecyclerView.ViewHolder {
 
     public void bind(D data, int pos) {
         if (injector == null) {
-            injector = new DefaultViewInjector(this, pos);
+            injector = new DefaultViewInjector(this);
         }
-        onBind(data, injector);
+        onBind(data, injector, pos);
     }
 
     @SuppressWarnings("unchecked")
@@ -44,6 +43,6 @@ public abstract class SlimViewHolder<D> extends RecyclerView.ViewHolder {
     }
 
 
-    abstract void onBind(D data, IViewInjector injector);
+    abstract void onBind(D data, IViewInjector injector, int pos);
 
 }

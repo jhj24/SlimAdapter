@@ -1,4 +1,4 @@
-package com.jhj.adapterdemo.adapter;
+package com.jhj.slimadapter.adapter;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -56,9 +56,10 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
 
                 return new SlimViewHolder<D>(parent, layoutRes) {
 
+
                     @Override
-                    void onBind(D data, IViewInjector injector) {
-                        slimInjector.onInject(data, injector);
+                    void onBind(D data, IViewInjector injector, int pos) {
+                        slimInjector.onInject(data, injector, pos);
                     }
                 };
 
@@ -119,7 +120,6 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     public int getItemCount() {
         return dataList.size();
     }
-
 
 
     interface ISlimViewHolder<D> {

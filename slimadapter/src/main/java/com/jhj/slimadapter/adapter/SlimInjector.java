@@ -1,8 +1,7 @@
-package com.jhj.adapterdemo.adapter;
+package com.jhj.slimadapter.adapter;
 
 
 import android.support.annotation.Nullable;
-
 
 
 /**
@@ -10,5 +9,5 @@ import android.support.annotation.Nullable;
  */
 
 public interface SlimInjector<T> {
-     void onInject(@Nullable T data, @Nullable IViewInjector injector);
+    void onInject(@Nullable T data, @Nullable IViewInjector injector, int pos);
 }

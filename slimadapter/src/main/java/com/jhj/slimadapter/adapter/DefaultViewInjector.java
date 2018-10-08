@@ -1,4 +1,4 @@
-package com.jhj.adapterdemo.adapter;
+package com.jhj.slimadapter.adapter;
 
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -20,11 +20,6 @@ public class DefaultViewInjector implements IViewInjector<DefaultViewInjector> {
 
     public DefaultViewInjector(SlimViewHolder viewHolder) {
         this.viewHolder = viewHolder;
-    }
-
-    public DefaultViewInjector(SlimViewHolder viewHolder, int pos) {
-        this.viewHolder = viewHolder;
-        this.pos = pos;
     }
 
     @Override
