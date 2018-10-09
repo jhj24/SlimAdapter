@@ -23,8 +23,8 @@ public class DefaultViewInjector implements IViewInjector<DefaultViewInjector> {
     }
 
     @Override
-    public final <T extends View> T findViewById(int id) {
-        return (T) viewHolder.getView(id);
+    public final <V extends View> V findViewById(int id) {
+        return (V) viewHolder.getView(id);
     }
 
     @Override

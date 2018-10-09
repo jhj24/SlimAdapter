@@ -33,7 +33,7 @@ public abstract class SlimViewHolder<D> extends RecyclerView.ViewHolder {
     }
 
     @SuppressWarnings("unchecked")
-    public final <V extends View> V getView(int id) {
+    public <V extends View> V getView(int id) {
         View view = viewMap.get(id);
         if (view == null) {
             view = itemView.findViewById(id);

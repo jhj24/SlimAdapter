@@ -23,6 +23,7 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     private List<Type> dataTypes = new ArrayList<>();
     private Map<Type, ISlimViewHolder> creators = new HashMap<>();
     private Handler handler = new Handler();
+    private RecyclerView recyclerView;
 
     private SlimAdapter() {
     }
@@ -86,9 +87,27 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     }
 
     public SlimAdapter attachTo(RecyclerView recyclerView) {
+        this.recyclerView = recyclerView;
         recyclerView.setAdapter(this);
         return this;
     }
+
+    public SlimAdapter layoutManager(RecyclerView.LayoutManager manager) {
+        if (recyclerView == null) {
+            throw new NullPointerException("RecyclerView is null,Please use this method after attachTo(recyclerView)");
+        }
+        recyclerView.setLayoutManager(manager);
+        return this;
+    }
+
+    public SlimAdapter addItemDecoration(RecyclerView.ItemDecoration itemDecoration) {
+        if (recyclerView == null) {
+            throw new NullPointerException("RecyclerView is null,Please use this method after attachTo(recyclerView)");
+        }
+        recyclerView.addItemDecoration(itemDecoration);
+        return this;
+    }
+
 
     public SlimAdapter updateData(List<?> dataList) {
         this.dataList = dataList;
