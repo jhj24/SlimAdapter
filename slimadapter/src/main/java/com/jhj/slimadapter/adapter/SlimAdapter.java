@@ -28,17 +28,24 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     private SlimAdapter() {
     }
 
-    public static SlimAdapter creater() {
+    public static SlimAdapter creator() {
         return new SlimAdapter();
     }
 
     @NonNull
     @Override
     public SlimViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        //根据item的ViewType获取其实际类型
         Type dataType = dataTypes.get(viewType);
-        ISlimViewHolder creator = creators.get(dataType);
-        return creator.create(parent);
+        //根据其实际类型获取 ViewHolder
+        ISlimViewHolder viewHolder = creators.get(dataType);
+        //缺少该数据类型对应的布局
+        if (viewHolder == null) {
+            throw new NullPointerException("missing related layouts corresponding to data types,please add related layout:" + dataType);
+        }
+        return viewHolder.create(parent);
     }
+
 
     @Override
     public void onBindViewHolder(@NonNull SlimViewHolder holder, int position) {
@@ -124,6 +131,14 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         return this;
     }
 
+    /**
+     * 返回position位置的ViewType，
+     * <p>
+     * dataList中可能有多种数据类型，根据其数据类型返回其不同的ViewType，ViewType从0开始一直向后加
+     *
+     * @param position item位置
+     * @return type
+     */
     @Override
     public int getItemViewType(int position) {
         Object item = dataList.get(position);
@@ -137,7 +152,11 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
 
     @Override
     public int getItemCount() {
-        return dataList.size();
+        if (dataList == null) {
+            return 0;
+        } else {
+            return dataList.size();
+        }
     }
 
 
