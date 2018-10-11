@@ -28,8 +28,9 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     private List<SlimViewHolderEx> headerItems = new ArrayList<>();
     private List<SlimViewHolderEx> footerItems = new ArrayList<>();
 
-    private static final int HEADER_VIEW = -0x10000000;
-    private static final int FOOTER_VIEW = -0x20000000;
+    private static final int HEADER_VIEW_TYPE = -0x10000000;
+    private static final int FOOTER_VIEW_TYPE = -0x20000000;
+    private static final int BODY_VIEW_TYPE = -0x30000000;
 
     private OnItemClickListener onItemClickListener;
     private OnItemLongClickListener onItemLongClickListener;
@@ -45,13 +46,14 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     @Override
     public SlimViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
-        if (viewType <= HEADER_VIEW && viewType > FOOTER_VIEW) {
-            return headerItems.get(HEADER_VIEW - viewType);
-        } else if (viewType <= FOOTER_VIEW) {
-            return footerItems.get(FOOTER_VIEW - viewType);
+
+        if (viewType > FOOTER_VIEW_TYPE && viewType <= HEADER_VIEW_TYPE) {
+            return headerItems.get(HEADER_VIEW_TYPE - viewType);
+        } else if (viewType > BODY_VIEW_TYPE && viewType <= FOOTER_VIEW_TYPE) {
+            return footerItems.get(FOOTER_VIEW_TYPE - viewType);
         } else {
             //根据item的ViewType获取其实际类型
-            Type dataType = dataTypes.get(viewType);
+            Type dataType = dataTypes.get(BODY_VIEW_TYPE - viewType);
             //根据其实际类型获取 ViewHolder
             ISlimViewHolder viewHolder = creators.get(dataType);
             //缺少该数据类型对应的布局
@@ -90,7 +92,7 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         int footerPosition = position - (bodyCount + headerItems.size());
 
         if (position < headerItems.size()) { //header
-            return HEADER_VIEW - position;
+            return HEADER_VIEW_TYPE - position;
         } else {
             if (bodyPosition < bodyCount) {//body
                 Object item = dataList.get(bodyPosition);
@@ -98,9 +100,10 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
                 if (index == -1) {
                     dataTypes.add(item.getClass());
                 }
-                return dataTypes.indexOf(item.getClass());
+                index = dataTypes.indexOf(item.getClass());
+                return BODY_VIEW_TYPE - index;
             } else { //footer
-                return FOOTER_VIEW - footerPosition;
+                return FOOTER_VIEW_TYPE - footerPosition;
             }
         }
     }
