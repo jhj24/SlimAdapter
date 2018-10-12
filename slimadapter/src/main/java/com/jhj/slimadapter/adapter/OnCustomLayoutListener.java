@@ -3,6 +3,8 @@ package com.jhj.slimadapter.adapter;
 import android.view.View;
 
 /**
+ * 自定义标题或尾部时自定义布局回调
+ * <p>
  * Created by jhj on 18-10-11.
  */
 

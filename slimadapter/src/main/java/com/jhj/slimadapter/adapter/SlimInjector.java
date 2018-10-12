@@ -1,13 +1,13 @@
 package com.jhj.slimadapter.adapter;
 
-
-import android.support.annotation.Nullable;
-
-
 /**
- * Created by jhj on 18-10-6.
+ * Created by jhj on 18-10-12.
  */
 
 public interface SlimInjector<T> {
-    void onInject(@Nullable T data, @Nullable IViewInjector injector, int pos);
+
+    int getItemViewLayoutId();
+
+    void convert(SlimViewHolder holder, T t, int position);
+
 }

@@ -20,13 +20,13 @@ import java.util.Map;
 
 public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
 
-    private List<?> dataList;
+    private ArrayList<?> dataList;
     private List<Type> dataTypes = new ArrayList<>();
-    private Map<Type, ISlimViewHolder> creators = new HashMap<>();
+    private Map<Type, SlimInjector> itemTypeMap = new HashMap<>();
     private RecyclerView recyclerView;
 
-    private List<SlimViewHolderEx> headerItems = new ArrayList<>();
-    private List<SlimViewHolderEx> footerItems = new ArrayList<>();
+    private List<View> headerItems = new ArrayList<>();
+    private List<View> footerItems = new ArrayList<>();
 
     private static final int HEADER_VIEW_TYPE = -0x10000000;
     private static final int FOOTER_VIEW_TYPE = -0x20000000;
@@ -35,10 +35,9 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     private OnItemClickListener onItemClickListener;
     private OnItemLongClickListener onItemLongClickListener;
 
-    protected SlimAdapter() {
-    }
 
     public static SlimAdapter creator() {
+
         return new SlimAdapter();
     }
 
@@ -48,19 +47,18 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
 
 
         if (viewType > FOOTER_VIEW_TYPE && viewType <= HEADER_VIEW_TYPE) {
-            return headerItems.get(HEADER_VIEW_TYPE - viewType);
+            return new SlimViewHolder(headerItems.get(HEADER_VIEW_TYPE - viewType));
         } else if (viewType > BODY_VIEW_TYPE && viewType <= FOOTER_VIEW_TYPE) {
-            return footerItems.get(FOOTER_VIEW_TYPE - viewType);
+            return new SlimViewHolder(footerItems.get(FOOTER_VIEW_TYPE - viewType));
         } else {
-            //根据item的ViewType获取其实际类型
             Type dataType = dataTypes.get(BODY_VIEW_TYPE - viewType);
-            //根据其实际类型获取 ViewHolder
-            ISlimViewHolder viewHolder = creators.get(dataType);
-            //缺少该数据类型对应的布局
-            if (viewHolder == null) {
+            SlimInjector injector = itemTypeMap.get(dataType);
+            if (injector == null) {
                 throw new NullPointerException("missing related layouts corresponding to data types,please add related layout:" + dataType);
             }
-            return viewHolder.create(parent);
+            int layoutRes = injector.getItemViewLayoutId();
+            //根据其实际类型获取 ViewHolder
+            return new SlimViewHolder(parent, layoutRes);
         }
     }
 
@@ -72,16 +70,14 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         int footerPosition = position - (bodyCount + headerItems.size());
 
         if (position < headerItems.size()) { //header
-            holder.bind(headerItems.get(position), position);
+            // convert(holder, headerItems.get(position), position);
         } else {
             if (bodyPosition < bodyCount) {//body
-                holder.bind(dataList.get(bodyPosition), position);
+                convert(holder, dataList.get(bodyPosition), position);
             } else { //footer
-                holder.bind(footerItems.get(footerPosition), position);
+                //  convert(holder, footerItems.get(footerPosition), position);
             }
         }
-
-
     }
 
 
@@ -118,30 +114,63 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         }
     }
 
-    public <D> SlimAdapter register(final int layoutRes, final SlimInjector<D> slimInjector) {
-        Type type = getSlimInjectorActualTypeArguments(slimInjector);
+
+    public <D> void convert(SlimViewHolder holder, D item, int position) {
+        SlimInjector itemView = itemTypeMap.get(item.getClass());
+        itemView.convert(holder, item, position);
+    }
+
+    public interface Slim<D> {
+        void a(SlimViewHolder holder, D t, int position);
+    }
+
+
+    public <D> SlimAdapter register(final int layoutRes, final Slim<D> slim) {
+        Type type = getSlimInjectorActualTypeArguments(slim);
         if (type == null) {
             throw new IllegalArgumentException();
         }
-
-
-        creators.put(type, new ISlimViewHolder() {
+        itemTypeMap.put(type, new SlimInjector<D>() {
             @Override
-            public SlimViewHolder<D> create(ViewGroup parent) {
+            public int getItemViewLayoutId() {
+                return layoutRes;
+            }
 
-                return new SlimViewHolder<D>(parent, layoutRes) {
-
-
-                    @Override
-                    void onBind(D data, IViewInjector injector, int pos) {
-                        slimInjector.onInject(data, injector, pos);
-                    }
-                };
-
+            @Override
+            public void convert(SlimViewHolder holder, D data, int position) {
+                slim.a(holder, data, position);
             }
         });
+
         return this;
     }
+
+   /* public <D extends MultiItemTypeModel> SlimAdapter register(final Map<Integer, Integer> layoutRes, final Slim<D> slim) {
+        final Type type = getSlimInjectorActualTypeArguments(slim);
+        if (type == null) {
+            throw new IllegalArgumentException();
+        }
+        itemTypeMap.put(type, new SlimInjector<D>() {
+            @Override
+            public int getItemViewLayoutId(D d) {
+                for (Map.Entry<Integer, Integer> entry : layoutRes.entrySet()) {
+                    if (entry.getValue() == getItemViewType(d.getItemType())) {
+                        return entry.getValue();
+                    }
+                }
+                return 0;
+            }
+
+
+            @Override
+            public void convert(SlimViewHolder holder, D data, int position) {
+                slim.a(holder, data, position);
+            }
+
+        });
+
+        return this;
+    }*/
 
 
     public SlimAdapter attachTo(final RecyclerView recyclerView) {
@@ -178,9 +207,36 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     }
 
 
-    public SlimAdapter updateData(List<?> dataList) {
+    public SlimAdapter updateData(ArrayList<?> dataList) {
         this.dataList = dataList;
         notifyDataSetChanged();
+        return this;
+    }
+
+    public SlimAdapter remove(int index) {
+        if (dataList == null) {
+            throw new NullPointerException("dataList is null,Please use this method after updateData(ArrayList<?>)");
+        }
+        this.dataList.remove(index);
+        notifyItemChanged(index + headerItems.size());
+        return this;
+    }
+
+    public SlimAdapter removeHeader(int index) {
+        if (dataList == null) {
+            throw new NullPointerException("dataList is null,Please use this method after updateData(ArrayList<?>)");
+        }
+        this.headerItems.remove(index);
+        notifyItemChanged(index);
+        return this;
+    }
+
+    public SlimAdapter removeFooter(int index) {
+        if (dataList == null) {
+            throw new NullPointerException("dataList is null,Please use this method after updateData(ArrayList<?>)");
+        }
+        this.headerItems.remove(index);
+        notifyItemChanged(index + headerItems.size() + dataList.size());
         return this;
     }
 
@@ -196,7 +252,7 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     }
 
     public SlimAdapter addHeader(View view) {
-        headerItems.add(new SlimViewHolderEx(view));
+        headerItems.add(view);
         notifyDataSetChanged();
         return this;
     }
@@ -214,7 +270,7 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     }
 
     public SlimAdapter addFooter(View view) {
-        footerItems.add(new SlimViewHolderEx(view));
+        footerItems.add(view);
         notifyDataSetChanged();
         return this;
     }
@@ -257,38 +313,21 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     }
 
 
-    <D> Type getSlimInjectorActualTypeArguments(SlimInjector<D> slimInjector) {
+    private <D> Type getSlimInjectorActualTypeArguments(Slim<D> slimInjector) {
         Type[] interfaces = slimInjector.getClass().getGenericInterfaces();
         for (Type type : interfaces) {
             if (type instanceof ParameterizedType) {
-                if (((ParameterizedType) type).getRawType().equals(SlimInjector.class)) {
+                if (((ParameterizedType) type).getRawType().equals(Slim.class)) {
                     Type actualType = ((ParameterizedType) type).getActualTypeArguments()[0];
                     if (actualType instanceof Class) {
                         return actualType;
                     } else {
-                        throw new IllegalArgumentException("The generic type argument of SlimInjector is NOT support Generic Parameterized Type now, Please using a WRAPPER class install of it directly.");
+                        throw new IllegalArgumentException("The generic type argument of Slim is NOT support Generic Parameterized Type now, Please using a WRAPPER class install of it directly.");
                     }
                 }
             }
         }
         return null;
-    }
-
-
-    interface ISlimViewHolder<D> {
-        SlimViewHolder<D> create(ViewGroup parent);
-    }
-
-    class SlimViewHolderEx extends SlimViewHolder {
-
-        SlimViewHolderEx(View view) {
-            super(view);
-        }
-
-        @Override
-        void onBind(Object data, IViewInjector injector, int pos) {
-
-        }
     }
 
 
