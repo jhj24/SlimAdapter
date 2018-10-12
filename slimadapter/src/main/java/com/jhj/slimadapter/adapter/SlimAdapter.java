@@ -1,6 +1,7 @@
 package com.jhj.slimadapter.adapter;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -34,6 +35,7 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
 
     private OnItemClickListener onItemClickListener;
     private OnItemLongClickListener onItemLongClickListener;
+    private int bodyPosition;
 
 
     public static SlimAdapter creator() {
@@ -84,7 +86,7 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     @Override
     public int getItemViewType(int position) {
         int bodyCount = getItemCount() - (headerItems.size() + footerItems.size());
-        int bodyPosition = position - headerItems.size();
+        bodyPosition = position - headerItems.size();
         int footerPosition = position - (bodyCount + headerItems.size());
 
         if (position < headerItems.size()) { //header
@@ -145,20 +147,24 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         return this;
     }
 
-   /* public <D extends MultiItemTypeModel> SlimAdapter register(final Map<Integer, Integer> layoutRes, final Slim<D> slim) {
+    public <D extends MultiItemTypeModel> SlimAdapter register(final Map<Integer, Integer> layoutRes, final Slim<D> slim) {
         final Type type = getSlimInjectorActualTypeArguments(slim);
         if (type == null) {
             throw new IllegalArgumentException();
         }
         itemTypeMap.put(type, new SlimInjector<D>() {
             @Override
-            public int getItemViewLayoutId(D d) {
+            public int getItemViewLayoutId() {
                 for (Map.Entry<Integer, Integer> entry : layoutRes.entrySet()) {
-                    if (entry.getValue() == getItemViewType(d.getItemType())) {
-                        return entry.getValue();
+                    if (dataList.get(bodyPosition) instanceof MultiItemTypeModel) {
+                        int value = ((MultiItemTypeModel) dataList.get(bodyPosition)).getItemType();
+                        if (entry.getKey() == value) {
+                            return entry.getValue();
+                        }
                     }
                 }
-                return 0;
+                throw new Resources.NotFoundException("Display different layouts for the same data type, When implementing the getItemType() method" +
+                        " of the MultiItemTypeModel interface, the return value must be equal to the key of the map.");
             }
 
 
@@ -170,7 +176,7 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         });
 
         return this;
-    }*/
+    }
 
 
     public SlimAdapter attachTo(final RecyclerView recyclerView) {
