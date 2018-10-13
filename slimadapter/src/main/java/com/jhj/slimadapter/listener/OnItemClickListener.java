@@ -1,4 +1,4 @@
-package com.jhj.slimadapter.adapter;
+package com.jhj.slimadapter.listener;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;

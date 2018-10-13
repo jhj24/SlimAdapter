@@ -1,4 +1,4 @@
-package com.jhj.slimadapter.adapter;
+package com.jhj.slimadapter.listener;
 
 import android.view.View;
 
