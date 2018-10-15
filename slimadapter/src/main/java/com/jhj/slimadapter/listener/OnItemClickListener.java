@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 /**
+ * 单击事件
  * Created by jhj on 18-10-11.
  */
 

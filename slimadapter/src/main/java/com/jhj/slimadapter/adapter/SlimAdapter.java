@@ -1,9 +1,9 @@
 package com.jhj.slimadapter.adapter;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +24,8 @@ import java.util.Map;
 
 /**
  * 简化Adapter
+ * <p>
+ * 支持普通布局、多样式布局以及添加标题和尾部
  * Created by jhj on 18-10-6.
  */
 
@@ -32,6 +34,7 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     private ArrayList<?> dataList;
     private List<Type> dataTypes = new ArrayList<>();
     private Map<Type, ItemViewDelegate> itemTypeMap = new HashMap<>();
+    private SparseArray<ItemViewDelegate> multiMap = new SparseArray<>();
     private RecyclerView recyclerView;
 
     private List<View> headerItems = new ArrayList<>();
@@ -58,6 +61,15 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
             return new SlimViewHolder(headerItems.get(HEADER_VIEW_TYPE - viewType));
         } else if (viewType > BODY_VIEW_TYPE && viewType <= FOOTER_VIEW_TYPE) {
             return new SlimViewHolder(footerItems.get(FOOTER_VIEW_TYPE - viewType));
+        } else if (viewType > HEADER_VIEW_TYPE) {
+            ItemViewDelegate itemView = multiMap.get(viewType);
+            if (itemView == null) {
+                throw new NullPointerException("Because you used a multi-style layout to inherit the MultiItemTypeModel" +
+                        " interface, but the layout of the getItemType() method return value is missing.");
+            }
+            int layoutRes = itemView.getItemViewLayoutId();
+            //根据其实际类型获取 ViewHolder
+            return new SlimViewHolder(parent, layoutRes);
         } else {
             Type dataType = dataTypes.get(BODY_VIEW_TYPE - viewType);
             ItemViewDelegate itemView = itemTypeMap.get(dataType);
@@ -80,15 +92,21 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         int footerPosition = position - (bodyCount + headerItems.size());
 
         if (position < headerItems.size()) { //header
-            // convert(holder, headerItems.get(position), position);
+            // 无需处理
         } else {
             if (bodyPosition < bodyCount) {//body
-                //convert(holder.getViewInjector(), dataList.get(bodyPosition), position);
+
                 Object data = dataList.get(bodyPosition);
-                ItemViewDelegate itemView = itemTypeMap.get(data.getClass());
-                itemView.injector(holder.getViewInjector(), data, position);
+                if (data instanceof MultiItemTypeModel) {
+                    ItemViewDelegate itemView = multiMap.get(((MultiItemTypeModel) data).getItemType());
+                    itemView.injector(holder.getViewInjector(), data, position);
+                } else {
+                    ItemViewDelegate itemView = itemTypeMap.get(data.getClass());
+                    itemView.injector(holder.getViewInjector(), data, position);
+                }
+
             } else { //footer
-                //  convert(holder, footerItems.get(footerPosition), position);
+               //
             }
         }
     }
@@ -97,29 +115,25 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     @Override
     public int getItemViewType(int position) {
 
-
         int bodyCount = getItemCount() - (headerItems.size() + footerItems.size());
         int bodyPosition = position - headerItems.size();
         int footerPosition = position - (bodyCount + headerItems.size());
-
-        if (bodyPosition >= 0 && bodyPosition < dataList.size()) {
-            Object data = dataList.get(bodyPosition);
-            ItemViewDelegate itemView = itemTypeMap.get(data.getClass());
-            itemView.getPosition(bodyPosition);
-        }
-
 
         if (position < headerItems.size()) { //header
             return HEADER_VIEW_TYPE - position;
         } else {
             if (bodyPosition < bodyCount) {//body
                 Object item = dataList.get(bodyPosition);
-                int index = dataTypes.indexOf(item.getClass());
-                if (index == -1) {
-                    dataTypes.add(item.getClass());
+                if (item instanceof MultiItemTypeModel) { //多样式布局
+                    return ((MultiItemTypeModel) item).getItemType();
+                } else {//普通布局
+                    int index = dataTypes.indexOf(item.getClass());
+                    if (index == -1) {
+                        dataTypes.add(item.getClass());
+                    }
+                    index = dataTypes.indexOf(item.getClass());
+                    return BODY_VIEW_TYPE - index;
                 }
-                index = dataTypes.indexOf(item.getClass());
-                return BODY_VIEW_TYPE - index;
             } else { //footer
                 return FOOTER_VIEW_TYPE - footerPosition;
             }
@@ -137,21 +151,12 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     }
 
 
-    public <D> void convert(ViewInjector injector, D item, int position) {
-        ItemViewDelegate itemView = itemTypeMap.get(item.getClass());
-        itemView.injector(injector, item, position);
-    }
-
-
     public <D> SlimAdapter register(final int layoutRes, final ItemViewCallback<D> callback) {
         Type type = getDataActualType(callback);
         if (type == null) {
             throw new IllegalArgumentException();
         }
         itemTypeMap.put(type, new ItemViewDelegate<D>() {
-            @Override
-            public void getPosition(int bodyPosition) {
-            }
 
             @Override
             public int getItemViewLayoutId() {
@@ -167,41 +172,19 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         return this;
     }
 
-    public <D extends MultiItemTypeModel> SlimAdapter register(final Map<Integer, Integer> layoutRes, final ItemViewCallback<D> callback) {
-        final Type type = getDataActualType(callback);
-        if (type == null) {
-            throw new IllegalArgumentException();
-        }
-        itemTypeMap.put(type, new ItemViewDelegate<D>() {
 
+    public <D extends MultiItemTypeModel> SlimAdapter register(final int viewType, final int layoutRes, final ItemViewCallback<D> callback) {
 
-            int position;
-
-            @Override
-            public void getPosition(int bodyPosition) {
-                this.position = bodyPosition;
-            }
-
+        multiMap.put(viewType, new ItemViewDelegate<D>() {
             @Override
             public int getItemViewLayoutId() {
-                for (Map.Entry<Integer, Integer> entry : layoutRes.entrySet()) {
-                    if (dataList.get(position) instanceof MultiItemTypeModel) {
-                        int value = ((MultiItemTypeModel) dataList.get(position)).getItemType();
-                        if (entry.getKey() == value) {
-                            return entry.getValue();
-                        }
-                    }
-                }
-                throw new Resources.NotFoundException("Display different layouts for the same data type, When implementing the getItemType() method" +
-                        " of the MultiItemTypeModel interface, the return value must be equal to the key of the map.");
+                return layoutRes;
             }
-
 
             @Override
             public void injector(ViewInjector injector, D data, int position) {
                 callback.convert(injector, data, position);
             }
-
         });
 
         return this;
@@ -211,14 +194,8 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     public SlimAdapter attachTo(final RecyclerView recyclerView) {
         this.recyclerView = recyclerView;
         setOnItemListener();
-        setHasStableIds(true);
         recyclerView.setAdapter(this);
         return this;
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return position;
     }
 
     public SlimAdapter layoutManager(RecyclerView.LayoutManager manager) {

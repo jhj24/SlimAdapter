@@ -3,7 +3,6 @@ package com.jhj.adapterdemo
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.LinearLayoutManager
 import android.widget.TextView
 import android.widget.Toast
 import com.jhj.slimadapter.adapter.ItemViewCallback
@@ -45,14 +44,20 @@ class MainActivity : AppCompatActivity() {
                 .register<String>(R.layout.list_item_string) { holder, t, position ->
                     holder?.text(R.id.textView, t)
                 }
-                .register<MultiBean>(mapOf(0 to R.layout.list_item_int, 1 to R.layout.list_item_string), object : ItemViewCallback<MultiBean> {
+                .register<MultiBean>(0, R.layout.list_item_int, object : ItemViewCallback<MultiBean> {
+                    override fun convert(holder: ViewInjector?, t: MultiBean?, position: Int) {
+                        holder?.text(R.id.textView, t?.a.toString())
+                    }
+
+                })
+                .register<MultiBean>(1, R.layout.list_item_string, object : ItemViewCallback<MultiBean> {
                     override fun convert(holder: ViewInjector?, t: MultiBean?, position: Int) {
                         holder?.text(R.id.textView, t?.a.toString())
                     }
 
                 })
                 .attachTo(recyclerView)
-                /*.addHeader(this, R.layout.list_item_string) {
+                .addHeader(this, R.layout.list_item_string) {
                     it.textView.text = "这是一个标题1"
                 }
                 .addHeader(this, R.layout.list_item_string) {
@@ -67,7 +72,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 .addFooter(this, R.layout.list_item_string) {
                     it.textView.text = "这是一个表尾２"
-                }*/
+                }
                 .addItemDecoration(com.jhj.adapterdemo.DividerItemDecoration(this))
                 .setOnItemClickListener { recyclerView, view, position ->
                     Toast.makeText(this, "点击" + position, Toast.LENGTH_SHORT).show()
@@ -76,13 +81,16 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this, "长按" + position, Toast.LENGTH_SHORT).show()
                     false
                 }
-                 .layoutManager(gridLayoutManager)
+                .layoutManager(gridLayoutManager)
                 //.layoutManager(LinearLayoutManager(this))
                 .updateData(arrayListOf(MultiBean(1), MultiBean(2), MultiBean(3), MultiBean(4), MultiBean(5),
                         MultiBean(6), MultiBean(7), MultiBean(8), MultiBean(9), MultiBean(10),
                         MultiBean(11), MultiBean(12), MultiBean(13), MultiBean(14), MultiBean(15),
                         MultiBean(16), MultiBean(17), MultiBean(18), MultiBean(19), MultiBean(20),
-                        MultiBean(21), MultiBean(22), MultiBean(23), MultiBean(24), MultiBean(25),"1","2","3","4","5"))
+                        MultiBean(21), MultiBean(22), MultiBean(23), MultiBean(24), MultiBean(25),
+                        MultiBean(26), MultiBean(27), MultiBean(28), MultiBean(29), MultiBean(30),
+                        MultiBean(31), MultiBean(32), MultiBean(33), MultiBean(34), MultiBean(35),
+                        MultiBean(36), MultiBean(37), MultiBean(38), MultiBean(39), MultiBean(40)))
 
         // .removeHeader(1)
 
