@@ -3,6 +3,7 @@ package com.jhj.slimadapter.adapter;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -64,11 +65,10 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         } else if (viewType > HEADER_VIEW_TYPE) {
             ItemViewDelegate itemView = multiMap.get(viewType);
             if (itemView == null) {
-                throw new NullPointerException("Because you used a multi-style layout to inherit the MultiItemTypeModel" +
-                        " interface, but the layout of the getItemType() method return value is missing.");
+                throw new NullPointerException("Because you used a multi-style layout to inherit the com.jhj.slimadapter.model.MutilItemTypeModel" +
+                        ", But did not find the layout corresponding to the return value of the getItemType() method.");
             }
             int layoutRes = itemView.getItemViewLayoutId();
-            //根据其实际类型获取 ViewHolder
             return new SlimViewHolder(parent, layoutRes);
         } else {
             Type dataType = dataTypes.get(BODY_VIEW_TYPE - viewType);
@@ -78,7 +78,6 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
                         "please add related layout:" + dataType);
             }
             int layoutRes = itemView.getItemViewLayoutId();
-            //根据其实际类型获取 ViewHolder
             return new SlimViewHolder(parent, layoutRes);
         }
 
@@ -89,26 +88,44 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     public void onBindViewHolder(@NonNull SlimViewHolder holder, int position) {
         int bodyCount = getItemCount() - (headerItems.size() + footerItems.size());
         int bodyPosition = position - headerItems.size();
-        int footerPosition = position - (bodyCount + headerItems.size());
 
-        if (position < headerItems.size()) { //header
-            // 无需处理
-        } else {
-            if (bodyPosition < bodyCount) {//body
+        if (bodyPosition < bodyCount && bodyCount >= 0) {//body
 
-                Object data = dataList.get(bodyPosition);
-                if (data instanceof MultiItemTypeModel) {
-                    ItemViewDelegate itemView = multiMap.get(((MultiItemTypeModel) data).getItemType());
-                    itemView.injector(holder.getViewInjector(), data, position);
-                } else {
-                    ItemViewDelegate itemView = itemTypeMap.get(data.getClass());
-                    itemView.injector(holder.getViewInjector(), data, position);
-                }
-
-            } else { //footer
-               //
+            Object data = dataList.get(bodyPosition);
+            if (data instanceof MultiItemTypeModel) {
+                ItemViewDelegate itemView = multiMap.get(((MultiItemTypeModel) data).getItemType());
+                itemView.injector(holder.getViewInjector(), data, position);
+            } else {
+                ItemViewDelegate itemView = itemTypeMap.get(data.getClass());
+                itemView.injector(holder.getViewInjector(), data, position);
             }
+
         }
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (onItemClickListener != null) {
+                    int position = recyclerView.getChildAdapterPosition(v);
+                    onItemClickListener.onItemClicked(recyclerView, v, position);
+                }
+            }
+        });
+
+         /*
+          * 当同时设置了recyclerView 点击和长按事件时，记得要设置长按返回true对事件进行拦截，
+          * 否则recyclerView执行完长按事件后会执行点击事件。
+          */
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (onItemLongClickListener != null) {
+                    int position = recyclerView.getChildAdapterPosition(v);
+                    return onItemLongClickListener.onItemLongClicked(recyclerView, v, position);
+                }
+                return false;
+            }
+        });
     }
 
 
@@ -150,6 +167,17 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         }
     }
 
+
+    @Override
+    public void onViewAttachedToWindow(@NonNull SlimViewHolder holder) {
+        super.onViewAttachedToWindow(holder);
+        int type = holder.getItemViewType();
+        if (type > BODY_VIEW_TYPE && type <= HEADER_VIEW_TYPE) {
+            setFullSpan(holder);
+        } else {
+            //addAnimation(holder);
+        }
+    }
 
     public <D> SlimAdapter register(final int layoutRes, final ItemViewCallback<D> callback) {
         Type type = getDataActualType(callback);
@@ -193,7 +221,6 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
 
     public SlimAdapter attachTo(final RecyclerView recyclerView) {
         this.recyclerView = recyclerView;
-        setOnItemListener();
         recyclerView.setAdapter(this);
         return this;
     }
@@ -293,41 +320,12 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         return this;
     }
 
-    private void setOnItemListener() {
-        recyclerView.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
-            @Override
-            public void onChildViewAttachedToWindow(View view) {
-                view.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (onItemClickListener != null) {
-                            int position = recyclerView.getChildAdapterPosition(v);
-                            onItemClickListener.onItemClicked(recyclerView, v, position);
-                        }
-                    }
-                });
-
-                /*
-                 * 当同时设置了recyclerView 点击和长按事件时，记得要设置长按返回true对事件进行拦截，
-                 * 否则recyclerView执行完长按事件后会执行点击事件。
-                 */
-                view.setOnLongClickListener(new View.OnLongClickListener() {
-                    @Override
-                    public boolean onLongClick(View v) {
-                        if (onItemLongClickListener != null) {
-                            int position = recyclerView.getChildAdapterPosition(v);
-                            return onItemLongClickListener.onItemLongClicked(recyclerView, v, position);
-                        }
-                        return false;
-                    }
-                });
-            }
-
-            @Override
-            public void onChildViewDetachedFromWindow(View view) {
-
-            }
-        });
+    protected void setFullSpan(RecyclerView.ViewHolder holder) {
+        if (holder.itemView.getLayoutParams() instanceof StaggeredGridLayoutManager.LayoutParams) {
+            StaggeredGridLayoutManager.LayoutParams params = (StaggeredGridLayoutManager.LayoutParams) holder
+                    .itemView.getLayoutParams();
+            params.setFullSpan(true);
+        }
     }
 
 
