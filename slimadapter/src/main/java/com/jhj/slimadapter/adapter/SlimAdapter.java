@@ -2,6 +2,7 @@ package com.jhj.slimadapter.adapter;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.SparseArray;
@@ -14,7 +15,10 @@ import com.jhj.slimadapter.holder.ViewInjector;
 import com.jhj.slimadapter.listener.OnCustomLayoutListener;
 import com.jhj.slimadapter.listener.OnItemClickListener;
 import com.jhj.slimadapter.listener.OnItemLongClickListener;
+import com.jhj.slimadapter.listener.OnLoadMoreListener;
 import com.jhj.slimadapter.model.MultiItemTypeModel;
+import com.jhj.slimadapter.more.LoadMoreView;
+import com.jhj.slimadapter.more.SimpleLoadMoreView;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -37,40 +41,49 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     private Map<Type, ItemViewDelegate> itemTypeMap = new HashMap<>();
     private SparseArray<ItemViewDelegate> multiMap = new SparseArray<>();
     private RecyclerView recyclerView;
+    private RecyclerView.LayoutManager layoutManager;
 
     private List<View> headerItems = new ArrayList<>();
     private List<View> footerItems = new ArrayList<>();
+    private LoadMoreView loadMoreItem = new SimpleLoadMoreView();
 
-    private static final int HEADER_VIEW_TYPE = -0x10000000;
-    private static final int FOOTER_VIEW_TYPE = -0x20000000;
-    private static final int BODY_VIEW_TYPE = -0x30000000;
+
+    private static final int HEADER_VIEW_TYPE = -0x00100000;
+    private static final int FOOTER_VIEW_TYPE = -0x00200000;
+    private static final int MORE_VIEW_TYPE = -0x00300000;
+    private static final int BODY_VIEW_TYPE = -0x00400000;
+
 
     private OnItemClickListener onItemClickListener;
     private OnItemLongClickListener onItemLongClickListener;
+    private OnLoadMoreListener onLoadMoreListener;
+    private boolean isLoading = false;
+
+    private SlimAdapter(RecyclerView.LayoutManager manager) {
+        this.layoutManager = manager;
+    }
 
 
-    public static SlimAdapter creator() {
+    public static SlimAdapter creator(RecyclerView.LayoutManager manager) {
 
-        return new SlimAdapter();
+        return new SlimAdapter(manager);
     }
 
     @NonNull
     @Override
     public SlimViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
-        if (viewType > FOOTER_VIEW_TYPE && viewType <= HEADER_VIEW_TYPE) {
+        if (isHeader(viewType)) {//header
             return new SlimViewHolder(headerItems.get(HEADER_VIEW_TYPE - viewType));
-        } else if (viewType > BODY_VIEW_TYPE && viewType <= FOOTER_VIEW_TYPE) {
+
+        } else if (isFooter(viewType)) {//footer
             return new SlimViewHolder(footerItems.get(FOOTER_VIEW_TYPE - viewType));
-        } else if (viewType > HEADER_VIEW_TYPE) {
-            ItemViewDelegate itemView = multiMap.get(viewType);
-            if (itemView == null) {
-                throw new NullPointerException("Because you used a multi-style layout to inherit the com.jhj.slimadapter.model.MutilItemTypeModel" +
-                        ", But did not find the layout corresponding to the return value of the getItemType() method.");
-            }
-            int layoutRes = itemView.getItemViewLayoutId();
-            return new SlimViewHolder(parent, layoutRes);
-        } else {
+
+        } else if (isLoadMore(viewType)) {//more
+            View view = LayoutInflater.from(parent.getContext()).inflate(loadMoreItem.getLayoutId(), parent, false);
+            return new SlimViewHolder(view);
+
+        } else if (isNormalBody(viewType)) { //normal body
             Type dataType = dataTypes.get(BODY_VIEW_TYPE - viewType);
             ItemViewDelegate itemView = itemTypeMap.get(dataType);
             if (itemView == null) {
@@ -79,17 +92,26 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
             }
             int layoutRes = itemView.getItemViewLayoutId();
             return new SlimViewHolder(parent, layoutRes);
-        }
 
+        } else {//multi body
+            ItemViewDelegate itemView = multiMap.get(viewType);
+            if (itemView == null) {
+                throw new NullPointerException("Because you used a multi-style layout to inherit the com.jhj.slimadapter.model.MutilItemTypeModel" +
+                        ", But did not find the layout corresponding to the return value of the getItemType() method.");
+            }
+            int layoutRes = itemView.getItemViewLayoutId();
+            return new SlimViewHolder(parent, layoutRes);
+
+        }
     }
 
 
     @Override
     public void onBindViewHolder(@NonNull SlimViewHolder holder, int position) {
-        int bodyCount = getItemCount() - (headerItems.size() + footerItems.size());
+        autoLoadMore(position);
         int bodyPosition = position - headerItems.size();
 
-        if (bodyPosition < bodyCount && bodyCount >= 0) {//body
+        if (bodyPosition >= 0 && bodyPosition < dataList.size()) {//body
 
             Object data = dataList.get(bodyPosition);
             if (data instanceof MultiItemTypeModel) {
@@ -100,6 +122,10 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
                 itemView.injector(holder.getViewInjector(), data, position);
             }
 
+        }
+
+        if (position == getLoadMoreViewPosition()) {
+            loadMoreItem.convert(holder);
         }
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -132,28 +158,36 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     @Override
     public int getItemViewType(int position) {
 
-        int bodyCount = getItemCount() - (headerItems.size() + footerItems.size());
         int bodyPosition = position - headerItems.size();
-        int footerPosition = position - (bodyCount + headerItems.size());
+        int footerPosition = position - (dataList.size() + headerItems.size());
 
         if (position < headerItems.size()) { //header
             return HEADER_VIEW_TYPE - position;
-        } else {
-            if (bodyPosition < bodyCount) {//body
-                Object item = dataList.get(bodyPosition);
-                if (item instanceof MultiItemTypeModel) { //多样式布局
-                    return ((MultiItemTypeModel) item).getItemType();
-                } else {//普通布局
-                    int index = dataTypes.indexOf(item.getClass());
-                    if (index == -1) {
-                        dataTypes.add(item.getClass());
-                    }
-                    index = dataTypes.indexOf(item.getClass());
-                    return BODY_VIEW_TYPE - index;
+
+        } else if (bodyPosition >= 0 && bodyPosition < dataList.size()) { //body
+            Object item = dataList.get(bodyPosition);
+
+            if (item instanceof MultiItemTypeModel) { //多样式布局
+                return ((MultiItemTypeModel) item).getItemType();
+
+            } else {//普通布局
+                int index = dataTypes.indexOf(item.getClass());
+                if (index == -1) {
+                    dataTypes.add(item.getClass());
                 }
-            } else { //footer
-                return FOOTER_VIEW_TYPE - footerPosition;
+                index = dataTypes.indexOf(item.getClass());
+                return BODY_VIEW_TYPE - index;
             }
+
+        } else if (position >= headerItems.size() + dataList.size() &&
+                position < headerItems.size() + dataList.size() + footerItems.size()) { //footer
+            return FOOTER_VIEW_TYPE - footerPosition;
+
+        } else if (position == getLoadMoreViewPosition()) { //more
+            return MORE_VIEW_TYPE;
+
+        } else {
+            return super.getItemViewType(position);
         }
     }
 
@@ -162,8 +196,10 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     public int getItemCount() {
         if (dataList == null) {
             return headerItems.size() + footerItems.size();
-        } else {
+        } else if (!isHasLoadMoreView()) {
             return dataList.size() + headerItems.size() + footerItems.size();
+        } else {
+            return dataList.size() + headerItems.size() + footerItems.size() + 1;
         }
     }
 
@@ -172,11 +208,40 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     public void onViewAttachedToWindow(@NonNull SlimViewHolder holder) {
         super.onViewAttachedToWindow(holder);
         int type = holder.getItemViewType();
-        if (type > BODY_VIEW_TYPE && type <= HEADER_VIEW_TYPE) {
+        if (isHeader(type) || isFooter(type) || isLoadMore(type)) {
             setFullSpan(holder);
         } else {
             //addAnimation(holder);
         }
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+        if (layoutManager instanceof GridLayoutManager) {
+            final GridLayoutManager gridLayoutManager = (GridLayoutManager) layoutManager;
+            final GridLayoutManager.SpanSizeLookup spanSizeLookup = gridLayoutManager.getSpanSizeLookup();
+
+            gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+                @Override
+                public int getSpanSize(int position) {
+                    int viewType = getItemViewType(position);
+                    if (isHeader(viewType) || isFooter(viewType) || isLoadMore(viewType)) {
+                        return gridLayoutManager.getSpanCount();
+                    }
+                    if (spanSizeLookup != null)
+                        return spanSizeLookup.getSpanSize(position);
+                    return 1;
+                }
+            });
+            gridLayoutManager.setSpanCount(gridLayoutManager.getSpanCount());
+        }
+
+    }
+
+    private boolean isHasLoadMoreView() {
+        return loadMoreItem != null;
     }
 
     public <D> SlimAdapter register(final int layoutRes, final ItemViewCallback<D> callback) {
@@ -221,17 +286,11 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
 
     public SlimAdapter attachTo(final RecyclerView recyclerView) {
         this.recyclerView = recyclerView;
+        recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(this);
         return this;
     }
 
-    public SlimAdapter layoutManager(RecyclerView.LayoutManager manager) {
-        if (recyclerView == null) {
-            throw new NullPointerException("RecyclerView is null,Please use this method after attachTo(recyclerView)");
-        }
-        recyclerView.setLayoutManager(manager);
-        return this;
-    }
 
     public SlimAdapter addItemDecoration(RecyclerView.ItemDecoration itemDecoration) {
         if (recyclerView == null) {
@@ -252,8 +311,48 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     }
 
 
+    public SlimAdapter setOnLoadMoreListener(OnLoadMoreListener requestLoadMoreListener) {
+        this.onLoadMoreListener = requestLoadMoreListener;
+        isLoading = false;
+        return this;
+    }
+
+    public SlimAdapter setLoadMoreView() {
+
+        return this;
+    }
+
+    /**
+     * Refresh end, no more data
+     */
+    public void loadMoreEnd() {
+        if (!isHasLoadMoreView()) {
+            return;
+        }
+        isLoading = false;
+        loadMoreItem.setLoadMoreStatus(LoadMoreView.STATUS_END);
+        notifyItemChanged(getLoadMoreViewPosition());
+
+    }
+
+    /**
+     * Refresh failed
+     */
+    public void loadMoreFail() {
+        if (!isHasLoadMoreView()) {
+            return;
+        }
+        isLoading = false;
+        loadMoreItem.setLoadMoreStatus(LoadMoreView.STATUS_FAIL);
+        notifyItemChanged(getLoadMoreViewPosition());
+    }
+
     public SlimAdapter updateData(ArrayList<?> dataList) {
         this.dataList = dataList;
+        if (onLoadMoreListener != null) {
+            isLoading = false;
+            loadMoreItem.setLoadMoreStatus(LoadMoreView.STATUS_DEFAULT);
+        }
         notifyDataSetChanged();
         return this;
     }
@@ -320,7 +419,61 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         return this;
     }
 
-    protected void setFullSpan(RecyclerView.ViewHolder holder) {
+
+    private void autoLoadMore(int position) {
+
+        if (!isHasLoadMoreView()) {
+            return;
+        }
+        if ((dataList == null || dataList.size() == 0) && headerItems.size() == 0 && footerItems.size() == 0) {
+            return;
+        }
+        if (position < getItemCount() - 1) {
+            return;
+        }
+        if (loadMoreItem.getLoadMoreStatus() != LoadMoreView.STATUS_DEFAULT) {
+            return;
+        }
+
+        loadMoreItem.setLoadMoreStatus(LoadMoreView.STATUS_LOADING);
+        if (!isLoading) {
+            isLoading = true;
+            if (recyclerView != null) {
+                recyclerView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        onLoadMoreListener.onLoadMoreRequested(SlimAdapter.this);
+                    }
+                });
+            } else {
+                onLoadMoreListener.onLoadMoreRequested(this);
+            }
+        }
+
+    }
+
+    private boolean isHeader(int viewType) {
+        return viewType > FOOTER_VIEW_TYPE && viewType <= HEADER_VIEW_TYPE;
+    }
+
+    private boolean isFooter(int viewType) {
+        return viewType > MORE_VIEW_TYPE && viewType <= FOOTER_VIEW_TYPE;
+    }
+
+    private boolean isLoadMore(int viewType) {
+        return viewType == MORE_VIEW_TYPE;
+    }
+
+    private boolean isNormalBody(int viewType) {
+        return viewType <= BODY_VIEW_TYPE;
+    }
+
+    private int getLoadMoreViewPosition() {
+        return headerItems.size() + dataList.size() + footerItems.size();
+    }
+
+
+    private void setFullSpan(RecyclerView.ViewHolder holder) {
         if (holder.itemView.getLayoutParams() instanceof StaggeredGridLayoutManager.LayoutParams) {
             StaggeredGridLayoutManager.LayoutParams params = (StaggeredGridLayoutManager.LayoutParams) holder
                     .itemView.getLayoutParams();
