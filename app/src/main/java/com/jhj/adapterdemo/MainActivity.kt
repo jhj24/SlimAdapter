@@ -6,7 +6,9 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.widget.TextView
 import android.widget.Toast
+import com.jhj.slimadapter.adapter.ItemViewCallback
 import com.jhj.slimadapter.adapter.SlimAdapter
+import com.jhj.slimadapter.holder.ViewInjector
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.list_item_int.view.*
 import kotlin.concurrent.thread
@@ -46,68 +48,62 @@ class MainActivity : AppCompatActivity() {
                 .register<String>(R.layout.list_item_string) { holder, t, position ->
                     holder?.text(R.id.textView, t)
                 }
-                /*.register<MultiBean>(0, R.layout.list_item_int, object : ItemViewCallback<MultiBean> {
-                    override fun convert(holder: ViewInjector?, t: MultiBean?, position: Int) {
-                        holder?.text(R.id.textView, t?.a.toString())
-                    }
-
-                })
-                .register<MultiBean>(1, R.layout.list_item_string, object : ItemViewCallback<MultiBean> {
-                    override fun convert(holder: ViewInjector?, t: MultiBean?, position: Int) {
-                        holder?.text(R.id.textView, t?.a.toString())
-                    }
-
-                })*/
+                .register<MultiBean>(0, R.layout.list_item_int) { holder, t, position ->
+                    holder?.text(R.id.textView, t?.a.toString())
+                }
+                .register<MultiBean>(1, R.layout.list_item_string) { holder, t, position ->
+                    holder?.text(R.id.textView, t?.a.toString())
+                }
                 .attachTo(recyclerView)
-                .addHeader(this, R.layout.list_item_string) {
-                    it.textView.text = "这是一个标题1"
-                }
-               /*  .addHeader(this, R.layout.list_item_string) {
-                    it.textView.text = "这是一个标题2"
-                }
-                .addHeader(this, R.layout.list_item_string) {
-                    it.textView.text = "这是一个标题3"
-                }
-                .addFooter(textView1)
-                .addFooter(this, R.layout.list_item_string) {
-                    it.textView.text = "这是一个表尾１"
-                }
-                .addFooter(this, R.layout.list_item_string) {
-                    it.textView.text = "这是一个表尾２"
-                }*/
-                //.layoutManager(gridLayoutManager)
-                .addItemDecoration(com.jhj.adapterdemo.DividerItemDecoration(this))
-                .setOnItemClickListener { recyclerView, view, position ->
-                    Toast.makeText(this, "点击" + position, Toast.LENGTH_SHORT).show()
-                }
-                .setOnItemLongClickListener { recyclerView, view, position ->
-                    Toast.makeText(this, "长按" + position, Toast.LENGTH_SHORT).show()
-                    false
-                }
-                .setOnLoadMoreListener {
-                    thread {
-                        Thread.sleep(3000)
-                        handler.post {
-                            it.loadMoreEnd()
-                        }
+/*  .addHeader(this, R.layout.list_item_string) {
+     it.textView.text = "这是一个标题1"
+ }
+    .addHeader(this, R.layout.list_itstring) {
+     it.textView.text = "这是一个标题2"
+ }
+ .addHeader(this, R.layout.list_item_string) {
+     it.textView.text = "这是一个标题3"
+ }
+ .addFooter(textView1)
+ .addFooter(this, R.layout.list_item_string) {
+     it.textView.text = "这是一个表尾１"
+ }
+ .addFooter(this, R.layout.list_item_string) {
+     it.textView.text = "这是一个表尾２"
+ }*/
+ //.layoutManager(gridLayoutManager)
+ .addItemDecoration(com.jhj.adapterdemo.DividerItemDecoration(this))
+ .setOnItemClickListener { recyclerView, view, position ->
+     Toast.makeText(this, "点击" + position, Toast.LENGTH_SHORT).show()
+ }
+ .setOnItemLongClickListener { recyclerView, view, position ->
+     Toast.makeText(this, "长按" + position, Toast.LENGTH_SHORT).show()
+     false
+ }
+ .setOnLoadMoreListener {
+     thread {
+         Thread.sleep(3000)
+         handler.post {
+             it.loadMoreEnd()
+         }
 
-                    }.start()
-                }
+     }.start()
+ }
 
-                .updateData(arrayListOf<Int>())
-        //.layoutManager(LinearLayoutManager(this))
-        /*.updateData(arrayListOf(MultiBean(1), MultiBean(2), MultiBean(3), MultiBean(4), MultiBean(5),
-                MultiBean(6), MultiBean(7), MultiBean(8), MultiBean(9), MultiBean(10),
-                MultiBean(11), MultiBean(12), MultiBean(13), MultiBean(14), MultiBean(15),
-                MultiBean(16), MultiBean(17), MultiBean(18), MultiBean(19), MultiBean(20),
-                MultiBean(21), MultiBean(22), MultiBean(23), MultiBean(24), MultiBean(25),
-                MultiBean(26), MultiBean(27), MultiBean(28), MultiBean(29), MultiBean(30),
-                MultiBean(31), MultiBean(32), MultiBean(33), MultiBean(34), MultiBean(35),
-                MultiBean(36), MultiBean(37), MultiBean(38), MultiBean(39), MultiBean(40)))*/
-
-
-        // .removeHeader(1)
+ .updateData(arrayListOf<Int>())
+//.layoutManager(LinearLayoutManager(this))
+/*.updateData(arrayListOf(MultiBean(1), MultiBean(2), MultiBean(3), MultiBean(4), MultiBean(5),
+ MultiBean(6), MultiBean(7), MultiBean(8), MultiBean(9), MultiBean(10),
+ MultiBean(11), MultiBean(12), MultiBean(13), MultiBean(14), MultiBean(15),
+ MultiBean(16), MultiBean(17), MultiBean(18), MultiBean(19), MultiBean(20),
+ MultiBean(21), MultiBean(22), MultiBean(23), MultiBean(24), MultiBean(25),
+ MultiBean(26), MultiBean(27), MultiBean(28), MultiBean(29), MultiBean(30),
+ MultiBean(31), MultiBean(32), MultiBean(33), MultiBean(34), MultiBean(35),
+ MultiBean(36), MultiBean(37), MultiBean(38), MultiBean(39), MultiBean(40)))*/
 
 
-    }
+// .removeHeader(1)
+
+
+}
 }
