@@ -3,39 +3,38 @@ package com.jhj.adapterdemo.ui
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
+import android.view.LayoutInflater
 import com.jhj.adapterdemo.R
 import com.jhj.slimadapter.adapter.SlimAdapter
 import kotlinx.android.synthetic.main.activity_recyclerview.*
-import kotlinx.android.synthetic.main.list_item_string.view.*
+import kotlinx.android.synthetic.main.layout_empty_view.view.*
+import org.jetbrains.anko.sdk25.coroutines.onClick
 
 /**
  * Created by jhj on 18-10-22.
  */
-class HeaderAndFooterActivity : AppCompatActivity() {
+class EmptyViewActivity : AppCompatActivity() {
 
     val dataList = arrayListOf<String>("刘德华", "周杰伦", "成龙", "李连杰", "周星驰", "周润华", "吴京", "黄渤", "王宝强", "徐峥")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recyclerview)
-
-
-        SlimAdapter.creator(LinearLayoutManager(this))
+        val view = LayoutInflater.from(this).inflate(R.layout.layout_empty_view, null, false);
+        val adapter = SlimAdapter.creator(LinearLayoutManager(this))
                 .register<String>(R.layout.list_item_string) { injector, bean, position ->
                     injector.text(R.id.textView, bean)
 
                 }
-
                 .attachTo(recyclerView)
-                .addHeader(this, R.layout.list_item_int) {adapter,it->
-                    it.textView.text = "这是一个标题"
+                .setEmptyView(this, R.layout.layout_empty_view) { adapter, v ->
+                    v.tv_load.onClick {
+                        adapter.updateData(dataList)
+                    }
                 }
-                .addFooter(this, R.layout.list_item_int) {adapter,it->
-                    it.textView.text = "这是一个结尾"
+                .setOnLoadMoreListener {
+                    it.loadMoreEnd()
                 }
-                .updateData(dataList)
 
     }
-
-
 }

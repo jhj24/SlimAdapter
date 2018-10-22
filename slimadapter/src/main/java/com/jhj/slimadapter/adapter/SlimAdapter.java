@@ -41,7 +41,8 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     private static final int HEADER_VIEW_TYPE = -0x00100000;
     private static final int FOOTER_VIEW_TYPE = -0x00200000;
     private static final int MORE_VIEW_TYPE = -0x00300000;
-    private static final int BODY_VIEW_TYPE = -0x00400000;
+    private static final int EMPTY_VIEW_TYPE = -0x00400000;
+    private static final int BODY_VIEW_TYPE = -0x00500000;
 
     private ArrayList<?> dataList;
     private List<Type> dataTypeList = new ArrayList<>();
@@ -54,7 +55,8 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
 
     private List<View> headerItemViewList = new ArrayList<>();
     private List<View> footerItemViewList = new ArrayList<>();
-    private LoadMoreView loadMoreItem = new SimpleLoadMoreView();
+    private LoadMoreView loadMoreView = new SimpleLoadMoreView();
+    private View emptyItemView;
 
     private OnItemClickListener onItemClickListener;
     private OnItemLongClickListener onItemLongClickListener;
@@ -84,9 +86,11 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
             return new SlimViewHolder(footerItemViewList.get(FOOTER_VIEW_TYPE - viewType));
 
         } else if (isLoadMore(viewType) && getLoadMoreViewPosition() != 0) {//more
-            View view = LayoutInflater.from(parent.getContext()).inflate(loadMoreItem.getLayoutId(), parent, false);
+            View view = LayoutInflater.from(parent.getContext()).inflate(loadMoreView.getLayoutId(), parent, false);
             return new SlimViewHolder(view);
 
+        } else if (emptyItemView != null && getLoadMoreViewPosition() == 0) {
+            return new SlimViewHolder(emptyItemView);
         } else if (isNormalBody(viewType)) { //normal body
             Type dataType = dataTypeList.get(BODY_VIEW_TYPE - viewType);
             ItemViewDelegate itemView = itemTypeMap.get(dataType);
@@ -129,8 +133,8 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
                 itemView.injector(holder.getViewInjector(), data, position);
             }
 
-        } else if (position == getLoadMoreViewPosition()) {
-            loadMoreItem.convert(holder);
+        } else if (onLoadMoreListener != null && position == getLoadMoreViewPosition() && getLoadMoreViewPosition() != 0) {
+            loadMoreView.convert(holder);
         }
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -182,8 +186,11 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         } else if (position >= headerItemViewList.size() + getDataListCount() && position < getLoadMoreViewPosition()) { //footer
             return FOOTER_VIEW_TYPE - footerPosition;
 
-        } else if (position == getLoadMoreViewPosition()) { //more
+        } else if (onLoadMoreListener != null && position == getLoadMoreViewPosition() && getLoadMoreViewPosition() != 0) { //more
             return MORE_VIEW_TYPE;
+
+        } else if (emptyItemView != null && getItemCount() == 1) {  //empty
+            return EMPTY_VIEW_TYPE;
 
         } else {
             return super.getItemViewType(position);
@@ -193,6 +200,9 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
 
     @Override
     public int getItemCount() {
+        if (emptyItemView != null && getLoadMoreViewPosition() == 0) {
+            return 1;
+        }
         if (isHasLoadMoreView()) {
             if (getLoadMoreViewPosition() == 0) {
                 return 0;
@@ -328,19 +338,17 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     }
 
     public SlimAdapter setLoadMoreView(LoadMoreView loadingView) {
-        this.loadMoreItem = loadingView;
+        this.loadMoreView = loadingView;
         return this;
     }
 
-    /**
-     * Refresh end, no more data
-     */
+
     public void loadMoreEnd() {
-        if (!isHasLoadMoreView()) {
+        if (!isHasLoadMoreView() || getLoadMoreViewPosition() == 0) {
             return;
         }
         isLoading = false;
-        loadMoreItem.setLoadMoreStatus(LoadMoreView.STATUS_END);
+        loadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_END);
         notifyItemChanged(getLoadMoreViewPosition());
 
     }
@@ -349,11 +357,11 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
      * Refresh failed
      */
     public void loadMoreFail() {
-        if (!isHasLoadMoreView()) {
+        if (!isHasLoadMoreView() || getLoadMoreViewPosition() == 0) {
             return;
         }
         isLoading = false;
-        loadMoreItem.setLoadMoreStatus(LoadMoreView.STATUS_FAIL);
+        loadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_FAIL);
         notifyItemChanged(getLoadMoreViewPosition());
     }
 
@@ -362,7 +370,7 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         this.dataList = dataList;
         if (onLoadMoreListener != null) {
             isLoading = false;
-            loadMoreItem.setLoadMoreStatus(LoadMoreView.STATUS_DEFAULT);
+            loadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_DEFAULT);
         }
         notifyDataSetChanged();
         return this;
@@ -389,10 +397,31 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         return this;
     }
 
+    public SlimAdapter setEmptyView(View emptyView) {
+        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        emptyView.setLayoutParams(params);
+        emptyItemView = emptyView;
+        notifyDataSetChanged();
+        return this;
+    }
+
+    public SlimAdapter setEmptyView(Context context, int layoutRes) {
+        View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
+        setEmptyView(view);
+        return this;
+    }
+
+    public SlimAdapter setEmptyView(Context context, int layoutRes, OnCustomLayoutListener listener) {
+        View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
+        listener.onLayout(this, view);
+        setEmptyView(view);
+        return this;
+    }
+
 
     public SlimAdapter addHeader(Context context, int layoutRes, OnCustomLayoutListener listener) {
         View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
-        listener.onLayout(view);
+        listener.onLayout(this, view);
         return addHeader(view);
     }
 
@@ -418,7 +447,7 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
 
     public SlimAdapter addFooter(Context context, int layoutRes, OnCustomLayoutListener listener) {
         View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
-        listener.onLayout(view);
+        listener.onLayout(this, view);
         return addFooter(view);
     }
 
@@ -460,14 +489,18 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
             return;
         }
 
-        if (position < getItemCount() - 1) {
-            return;
-        }
-        if (loadMoreItem.getLoadMoreStatus() != LoadMoreView.STATUS_DEFAULT) {
+        if (getLoadMoreViewPosition() == 0) {
             return;
         }
 
-        loadMoreItem.setLoadMoreStatus(LoadMoreView.STATUS_LOADING);
+        if (position < getItemCount() - 1) {
+            return;
+        }
+        if (loadMoreView.getLoadMoreStatus() != LoadMoreView.STATUS_DEFAULT) {
+            return;
+        }
+
+        loadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_LOADING);
         if (!isLoading) {
             isLoading = true;
             if (recyclerView != null) {
@@ -505,12 +538,16 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         return viewType == MORE_VIEW_TYPE;
     }
 
+    private boolean isEmptyView(int viewType) {
+        return viewType == EMPTY_VIEW_TYPE;
+    }
+
     private boolean isNormalBody(int viewType) {
         return viewType <= BODY_VIEW_TYPE;
     }
 
     private boolean isHasLoadMoreView() {
-        return loadMoreItem != null && onLoadMoreListener != null;
+        return loadMoreView != null && onLoadMoreListener != null;
     }
 
     private int getLoadMoreViewPosition() {

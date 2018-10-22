@@ -29,6 +29,7 @@
         <activity android:name=".ui.MultiActivity" />
         <activity android:name=".ui.DifferentDataTypeActivity" />
         <activity android:name=".ui.HeaderAndFooterActivity" />
+        <activity android:name=".ui.EmptyViewActivity" />
     </application>
 
 </manifest>

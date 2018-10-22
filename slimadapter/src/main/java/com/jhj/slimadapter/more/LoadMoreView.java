@@ -49,14 +49,14 @@ public abstract class LoadMoreView {
     }
 
     private void visibleLoading(SlimViewHolder holder, boolean visible) {
-        if (getLoadingViewId() != 0){
+        if (getLoadingViewId() != 0) {
             holder.getViewInjector().visibility(getLoadingViewId(), visible ? View.VISIBLE : View.GONE);
         }
 
     }
 
     private void visibleLoadFail(SlimViewHolder holder, boolean visible) {
-        if (getLoadFailViewId() != 0){
+        if (getLoadFailViewId() != 0) {
             holder.getViewInjector().visibility(getLoadFailViewId(), visible ? View.VISIBLE : View.GONE);
         }
     }
@@ -72,26 +72,30 @@ public abstract class LoadMoreView {
      *
      * @return
      */
-    public abstract @LayoutRes int getLayoutId();
+    public abstract @LayoutRes
+    int getLayoutId();
 
     /**
      * loading view
      *
      * @return
      */
-    protected abstract @IdRes int getLoadingViewId();
+    protected abstract @IdRes
+    int getLoadingViewId();
 
     /**
      * load fail view
      *
      * @return
      */
-    protected abstract @IdRes int getLoadFailViewId();
+    protected abstract @IdRes
+    int getLoadFailViewId();
 
     /**
      * load end view, you can return 0
      *
      * @return
      */
-    protected abstract @IdRes int getLoadEndViewId();
+    protected abstract @IdRes
+    int getLoadEndViewId();
 }

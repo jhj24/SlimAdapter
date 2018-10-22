@@ -2,6 +2,8 @@ package com.jhj.slimadapter.listener;
 
 import android.view.View;
 
+import com.jhj.slimadapter.adapter.SlimAdapter;
+
 /**
  * 自定义标题或尾部时自定义布局回调
  * <p>
@@ -9,5 +11,5 @@ import android.view.View;
  */
 
 public interface OnCustomLayoutListener {
-    void onLayout(View view);
+    void onLayout(SlimAdapter adapter, View view);
 }
