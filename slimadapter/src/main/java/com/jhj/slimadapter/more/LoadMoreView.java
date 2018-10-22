@@ -6,10 +6,6 @@ import android.view.View;
 
 import com.jhj.slimadapter.holder.SlimViewHolder;
 
-/**
- * Created by BlingBling on 2016/11/11.
- */
-
 public abstract class LoadMoreView {
 
     public static final int STATUS_DEFAULT = 1;
@@ -18,7 +14,6 @@ public abstract class LoadMoreView {
     public static final int STATUS_END = 4;
 
     private int mLoadMoreStatus = STATUS_DEFAULT;
-    private boolean mLoadMoreEndGone = false;
 
     public void setLoadMoreStatus(int loadMoreStatus) {
         this.mLoadMoreStatus = loadMoreStatus;
@@ -77,34 +72,26 @@ public abstract class LoadMoreView {
      *
      * @return
      */
-    public abstract
-    @LayoutRes
-    int getLayoutId();
+    public abstract @LayoutRes int getLayoutId();
 
     /**
      * loading view
      *
      * @return
      */
-    protected abstract
-    @IdRes
-    int getLoadingViewId();
+    protected abstract @IdRes int getLoadingViewId();
 
     /**
      * load fail view
      *
      * @return
      */
-    protected abstract
-    @IdRes
-    int getLoadFailViewId();
+    protected abstract @IdRes int getLoadFailViewId();
 
     /**
      * load end view, you can return 0
      *
      * @return
      */
-    protected abstract
-    @IdRes
-    int getLoadEndViewId();
+    protected abstract @IdRes int getLoadEndViewId();
 }

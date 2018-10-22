@@ -1,5 +1,7 @@
 package com.jhj.slimadapter.adapter;
 
+import android.support.annotation.NonNull;
+
 import com.jhj.slimadapter.holder.ViewInjector;
 
 /**
@@ -10,6 +12,6 @@ import com.jhj.slimadapter.holder.ViewInjector;
 
 public interface ItemViewCallback<D> {
 
-    void convert(ViewInjector holder, D t, int position);
+    void convert(@NonNull ViewInjector injector,  D bean, @NonNull int position);
 
 }

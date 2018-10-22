@@ -85,7 +85,7 @@ public class DividerItemDecoration extends RecyclerView.ItemDecoration {
             final RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child
                     .getLayoutParams();
 
-            /*if (i < getSpanCount(parent))//如果是第一行
+            if (i < getSpanCount(parent))//如果是第一行
             {
                 final int top = child.getTop() + child.getPaddingTop();
                 final int bottom = child.getBottom();
@@ -102,14 +102,14 @@ public class DividerItemDecoration extends RecyclerView.ItemDecoration {
                 mDivider.setBounds(left, top, right, bottom);
                 mDivider.draw(c);
             } else
-            {*/
+            {
             final int top = child.getTop();
             final int bottom = child.getBottom();
             final int left = child.getRight() + params.rightMargin;
             final int right = left + mDivider.getIntrinsicWidth();
             mDivider.setBounds(left, top, right, bottom);
             mDivider.draw(c);
-            // }/
+            }
         }
     }
 

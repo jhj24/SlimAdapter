@@ -3,12 +3,14 @@ package com.jhj.slimadapter.adapter;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import com.jhj.slimadapter.holder.SlimViewHolder;
 import com.jhj.slimadapter.holder.ViewInjector;
@@ -36,27 +38,31 @@ import java.util.Map;
 
 public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
 
-    private ArrayList<?> dataList;
-    private List<Type> dataTypeList = new ArrayList<>();
-    private List<Integer> multiTypeList = new ArrayList<>();
-    private Map<Type, ItemViewDelegate> itemTypeMap = new HashMap<>();
-    private SparseArray<ItemViewDelegate> multiTypeMap = new SparseArray<>();
-    private RecyclerView recyclerView;
-    private RecyclerView.LayoutManager layoutManager;
-
-    private List<View> headerItems = new ArrayList<>();
-    private List<View> footerItems = new ArrayList<>();
-    private LoadMoreView loadMoreItem = new SimpleLoadMoreView();
-
     private static final int HEADER_VIEW_TYPE = -0x00100000;
     private static final int FOOTER_VIEW_TYPE = -0x00200000;
     private static final int MORE_VIEW_TYPE = -0x00300000;
     private static final int BODY_VIEW_TYPE = -0x00400000;
 
+    private ArrayList<?> dataList;
+    private List<Type> dataTypeList = new ArrayList<>();
+    private List<Integer> multiTypeList = new ArrayList<>();
+    private Map<Type, ItemViewDelegate> itemTypeMap = new HashMap<>();
+    private SparseArray<ItemViewDelegate> multiTypeMap = new SparseArray<>();
+
+    private RecyclerView recyclerView;
+    private RecyclerView.LayoutManager layoutManager;
+
+    private List<View> headerItemViewList = new ArrayList<>();
+    private List<View> footerItemViewList = new ArrayList<>();
+    private LoadMoreView loadMoreItem = new SimpleLoadMoreView();
+
     private OnItemClickListener onItemClickListener;
     private OnItemLongClickListener onItemLongClickListener;
     private OnLoadMoreListener onLoadMoreListener;
     private boolean isLoading = false;
+    private boolean headerWholeLine = true;
+    private boolean footerWholeLine = true;
+
 
     private SlimAdapter(RecyclerView.LayoutManager manager) {
         this.layoutManager = manager;
@@ -72,10 +78,10 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     public SlimViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
         if (isHeader(viewType)) {//header
-            return new SlimViewHolder(headerItems.get(HEADER_VIEW_TYPE - viewType));
+            return new SlimViewHolder(headerItemViewList.get(HEADER_VIEW_TYPE - viewType));
 
         } else if (isFooter(viewType)) {//footer
-            return new SlimViewHolder(footerItems.get(FOOTER_VIEW_TYPE - viewType));
+            return new SlimViewHolder(footerItemViewList.get(FOOTER_VIEW_TYPE - viewType));
 
         } else if (isLoadMore(viewType) && getLoadMoreViewPosition() != 0) {//more
             View view = LayoutInflater.from(parent.getContext()).inflate(loadMoreItem.getLayoutId(), parent, false);
@@ -109,11 +115,12 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull SlimViewHolder holder, int position) {
         autoLoadMore(position);
-        int bodyPosition = position - headerItems.size();
+        int bodyPosition = position - headerItemViewList.size();
 
-        if (bodyPosition >= 0 && bodyPosition < dataList.size()) {//body
+        if (bodyPosition >= 0 && bodyPosition < getDataListCount()) {//body
 
             Object data = dataList.get(bodyPosition);
+
             if (data instanceof MultiItemTypeModel) {
                 ItemViewDelegate itemView = multiTypeMap.get(((MultiItemTypeModel) data).getItemType());
                 itemView.injector(holder.getViewInjector(), data, position);
@@ -156,13 +163,13 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     @Override
     public int getItemViewType(int position) {
 
-        int bodyPosition = position - headerItems.size();
-        int footerPosition = position - (dataList.size() + headerItems.size());
+        int bodyPosition = position - headerItemViewList.size();
+        int footerPosition = position - (getDataListCount() + headerItemViewList.size());
 
-        if (position < headerItems.size()) { //header
+        if (position < headerItemViewList.size()) { //header
             return HEADER_VIEW_TYPE - position;
 
-        } else if (bodyPosition >= 0 && bodyPosition < dataList.size()) { //body
+        } else if (bodyPosition >= 0 && bodyPosition < getDataListCount()) { //body
             Object item = dataList.get(bodyPosition);
             if (item instanceof MultiItemTypeModel) { //多样式布局
                 return ((MultiItemTypeModel) item).getItemType();
@@ -172,7 +179,7 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
                 return BODY_VIEW_TYPE - index;
             }
 
-        } else if (position >= headerItems.size() + dataList.size() && position < getLoadMoreViewPosition()) { //footer
+        } else if (position >= headerItemViewList.size() + getDataListCount() && position < getLoadMoreViewPosition()) { //footer
             return FOOTER_VIEW_TYPE - footerPosition;
 
         } else if (position == getLoadMoreViewPosition()) { //more
@@ -187,19 +194,13 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     @Override
     public int getItemCount() {
         if (isHasLoadMoreView()) {
-            if (dataList == null) {
-                return headerItems.size() + footerItems.size() + 1;
-            } else if (getLoadMoreViewPosition() == 0) {
+            if (getLoadMoreViewPosition() == 0) {
                 return 0;
             } else {
-                return dataList.size() + headerItems.size() + footerItems.size() + 1;
+                return getDataListCount() + headerItemViewList.size() + footerItemViewList.size() + 1;
             }
         } else {
-            if (dataList == null) {
-                return headerItems.size() + footerItems.size();
-            } else {
-                return dataList.size() + headerItems.size() + footerItems.size();
-            }
+            return getDataListCount() + headerItemViewList.size() + footerItemViewList.size();
         }
     }
 
@@ -227,9 +228,14 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
                 @Override
                 public int getSpanSize(int position) {
                     int viewType = getItemViewType(position);
-                    if (isHeader(viewType) || isFooter(viewType) || isLoadMore(viewType)) {
+                    if (isLoadMore(viewType)) {
+                        return gridLayoutManager.getSpanCount();
+                    } else if (isFooter(viewType) && isFooterWholeLine()) {
+                        return gridLayoutManager.getSpanCount();
+                    } else if (isHeader(viewType) && isHeaderWholeLine()) {
                         return gridLayoutManager.getSpanCount();
                     }
+
                     if (spanSizeLookup != null)
                         return spanSizeLookup.getSpanSize(position);
                     return 1;
@@ -240,9 +246,6 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
 
     }
 
-    private boolean isHasLoadMoreView() {
-        return loadMoreItem != null;
-    }
 
     public <D> SlimAdapter register(final int layoutRes, final ItemViewCallback<D> callback) {
         Type type = getDataActualType(callback);
@@ -318,14 +321,14 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     }
 
 
-    public SlimAdapter setOnLoadMoreListener(OnLoadMoreListener requestLoadMoreListener) {
-        this.onLoadMoreListener = requestLoadMoreListener;
+    public SlimAdapter setOnLoadMoreListener(OnLoadMoreListener onLoadMoreListener) {
+        this.onLoadMoreListener = onLoadMoreListener;
         isLoading = false;
         return this;
     }
 
-    public SlimAdapter setLoadMoreView() {
-
+    public SlimAdapter setLoadMoreView(LoadMoreView loadingView) {
+        this.loadMoreItem = loadingView;
         return this;
     }
 
@@ -354,6 +357,7 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         notifyItemChanged(getLoadMoreViewPosition());
     }
 
+
     public SlimAdapter updateData(ArrayList<?> dataList) {
         this.dataList = dataList;
         if (onLoadMoreListener != null) {
@@ -369,25 +373,19 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
             throw new NullPointerException("dataList is null,Please use this method after updateData(ArrayList<?>)");
         }
         this.dataList.remove(index);
-        notifyItemChanged(index + headerItems.size());
+        notifyItemChanged(index + headerItemViewList.size());
         return this;
     }
 
     public SlimAdapter removeHeader(int index) {
-        if (dataList == null) {
-            throw new NullPointerException("dataList is null,Please use this method after updateData(ArrayList<?>)");
-        }
-        this.headerItems.remove(index);
+        this.headerItemViewList.remove(index);
         notifyItemChanged(index);
         return this;
     }
 
     public SlimAdapter removeFooter(int index) {
-        if (dataList == null) {
-            throw new NullPointerException("dataList is null,Please use this method after updateData(ArrayList<?>)");
-        }
-        this.headerItems.remove(index);
-        notifyItemChanged(index + headerItems.size() + dataList.size());
+        this.headerItemViewList.remove(index);
+        notifyItemChanged(index + headerItemViewList.size() + getDataListCount());
         return this;
     }
 
@@ -403,7 +401,16 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     }
 
     public SlimAdapter addHeader(View view) {
-        headerItems.add(view);
+        ViewGroup.LayoutParams params;
+        if (layoutManager instanceof LinearLayoutManager) {
+            if (((LinearLayoutManager) layoutManager).getOrientation() == LinearLayout.VERTICAL) {
+                params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            } else {
+                params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            }
+            view.setLayoutParams(params);
+        }
+        headerItemViewList.add(view);
         notifyDataSetChanged();
         return this;
     }
@@ -421,11 +428,31 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     }
 
     public SlimAdapter addFooter(View view) {
-        footerItems.add(view);
+        ViewGroup.LayoutParams params;
+        if (layoutManager instanceof LinearLayoutManager) {
+            if (((LinearLayoutManager) layoutManager).getOrientation() == LinearLayout.VERTICAL) {
+                params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            } else {
+                params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            }
+            view.setLayoutParams(params);
+        }
+        footerItemViewList.add(view);
         notifyDataSetChanged();
         return this;
     }
 
+
+    public SlimAdapter setHeaderWholeLine(boolean headerWholeLine) {
+        this.headerWholeLine = headerWholeLine;
+        return this;
+    }
+
+
+    public SlimAdapter setFooterWholeLine(boolean footerWholeLine) {
+        this.footerWholeLine = footerWholeLine;
+        return this;
+    }
 
     private void autoLoadMore(int position) {
 
@@ -447,15 +474,24 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
                 recyclerView.post(new Runnable() {
                     @Override
                     public void run() {
-                        onLoadMoreListener.onLoadMoreRequested(SlimAdapter.this);
+                        onLoadMoreListener.onLoadMore(SlimAdapter.this);
                     }
                 });
             } else {
-                onLoadMoreListener.onLoadMoreRequested(this);
+                onLoadMoreListener.onLoadMore(this);
             }
         }
 
     }
+
+    private boolean isFooterWholeLine() {
+        return footerWholeLine;
+    }
+
+    private boolean isHeaderWholeLine() {
+        return headerWholeLine;
+    }
+
 
     private boolean isHeader(int viewType) {
         return viewType > FOOTER_VIEW_TYPE && viewType <= HEADER_VIEW_TYPE;
@@ -473,12 +509,19 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         return viewType <= BODY_VIEW_TYPE;
     }
 
+    private boolean isHasLoadMoreView() {
+        return loadMoreItem != null && onLoadMoreListener != null;
+    }
 
     private int getLoadMoreViewPosition() {
+        return headerItemViewList.size() + getDataListCount() + footerItemViewList.size();
+    }
+
+    private int getDataListCount() {
         if (dataList == null) {
-            return headerItems.size() + footerItems.size();
+            return 0;
         } else {
-            return headerItems.size() + dataList.size() + footerItems.size();
+            return dataList.size();
         }
     }
 

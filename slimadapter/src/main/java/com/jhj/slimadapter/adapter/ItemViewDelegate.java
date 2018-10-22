@@ -1,6 +1,7 @@
 package com.jhj.slimadapter.adapter;
 
 import android.support.annotation.IdRes;
+import android.support.annotation.NonNull;
 
 import com.jhj.slimadapter.holder.ViewInjector;
 
@@ -15,7 +16,6 @@ public interface ItemViewDelegate<T> {
     @IdRes
     int getItemViewLayoutId();
 
-    void injector(ViewInjector injector, T t, int position);
-
+    void injector(@NonNull ViewInjector injector, T t, @NonNull int position);
 
 }

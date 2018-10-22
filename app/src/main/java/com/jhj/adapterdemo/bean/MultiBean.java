@@ -1,4 +1,4 @@
-package com.jhj.adapterdemo;
+package com.jhj.adapterdemo.bean;
 
 import com.jhj.slimadapter.model.MultiItemTypeModel;
 
@@ -8,15 +8,15 @@ import com.jhj.slimadapter.model.MultiItemTypeModel;
 
 public class MultiBean implements MultiItemTypeModel {
 
-    public int a;
+    public int num;
 
-    public MultiBean(int a) {
-        this.a = a;
+    public MultiBean(int num) {
+        this.num = num;
     }
 
     @Override
     public int getItemType() {
-        if (a % 2 == 0) {
+        if (num % 2 == 0) {
             return 1;
         } else {
             return 0;
