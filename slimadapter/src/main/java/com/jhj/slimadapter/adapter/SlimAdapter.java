@@ -85,11 +85,11 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         } else if (isFooter(viewType)) {//footer
             return new SlimViewHolder(footerItemViewList.get(FOOTER_VIEW_TYPE - viewType));
 
-        } else if (isLoadMore(viewType) && getLoadMoreViewPosition() != 0) {//more
+        } else if (isLoadMore(viewType)) {//more
             View view = LayoutInflater.from(parent.getContext()).inflate(loadMoreView.getLayoutId(), parent, false);
             return new SlimViewHolder(view);
 
-        } else if (emptyItemView != null && getLoadMoreViewPosition() == 0) {
+        } else if (isEmptyView(viewType)) {//empty
             return new SlimViewHolder(emptyItemView);
         } else if (isNormalBody(viewType)) { //normal body
             Type dataType = dataTypeList.get(BODY_VIEW_TYPE - viewType);
@@ -133,9 +133,10 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
                 itemView.injector(holder.getViewInjector(), data, position);
             }
 
-        } else if (onLoadMoreListener != null && position == getLoadMoreViewPosition() && getLoadMoreViewPosition() != 0) {
+        } else if (isShowLoadMoreView(position)) {
             loadMoreView.convert(holder);
         }
+
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -183,13 +184,14 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
                 return BODY_VIEW_TYPE - index;
             }
 
-        } else if (position >= headerItemViewList.size() + getDataListCount() && position < getLoadMoreViewPosition()) { //footer
+        } else if (position >= headerItemViewList.size() + getDataListCount() &&
+                position < getDataListCount() + headerItemViewList.size() + footerItemViewList.size()) { //footer
             return FOOTER_VIEW_TYPE - footerPosition;
 
-        } else if (onLoadMoreListener != null && position == getLoadMoreViewPosition() && getLoadMoreViewPosition() != 0) { //more
+        } else if (isShowLoadMoreView(position)) { //more
             return MORE_VIEW_TYPE;
 
-        } else if (emptyItemView != null && getItemCount() == 1) {  //empty
+        } else if (emptyItemView != null && (getDataListCount() + headerItemViewList.size() + footerItemViewList.size()) == 0) {  //empty
             return EMPTY_VIEW_TYPE;
 
         } else {
@@ -203,7 +205,7 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         if (emptyItemView != null && getLoadMoreViewPosition() == 0) {
             return 1;
         }
-        if (isHasLoadMoreView()) {
+        if (onLoadMoreListener != null) {
             if (getLoadMoreViewPosition() == 0) {
                 return 0;
             } else {
@@ -320,51 +322,6 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         return this;
     }
 
-    public SlimAdapter setOnItemClickListener(OnItemClickListener listener) {
-        this.onItemClickListener = listener;
-        return this;
-    }
-
-    public SlimAdapter setOnItemLongClickListener(OnItemLongClickListener listener) {
-        this.onItemLongClickListener = listener;
-        return this;
-    }
-
-
-    public SlimAdapter setOnLoadMoreListener(OnLoadMoreListener onLoadMoreListener) {
-        this.onLoadMoreListener = onLoadMoreListener;
-        isLoading = false;
-        return this;
-    }
-
-    public SlimAdapter setLoadMoreView(LoadMoreView loadingView) {
-        this.loadMoreView = loadingView;
-        return this;
-    }
-
-
-    public void loadMoreEnd() {
-        if (!isHasLoadMoreView() || getLoadMoreViewPosition() == 0) {
-            return;
-        }
-        isLoading = false;
-        loadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_END);
-        notifyItemChanged(getLoadMoreViewPosition());
-
-    }
-
-    /**
-     * Refresh failed
-     */
-    public void loadMoreFail() {
-        if (!isHasLoadMoreView() || getLoadMoreViewPosition() == 0) {
-            return;
-        }
-        isLoading = false;
-        loadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_FAIL);
-        notifyItemChanged(getLoadMoreViewPosition());
-    }
-
 
     public SlimAdapter updateData(ArrayList<?> dataList) {
         this.dataList = dataList;
@@ -385,39 +342,8 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         return this;
     }
 
-    public SlimAdapter removeHeader(int index) {
-        this.headerItemViewList.remove(index);
-        notifyItemChanged(index);
-        return this;
-    }
 
-    public SlimAdapter removeFooter(int index) {
-        this.headerItemViewList.remove(index);
-        notifyItemChanged(index + headerItemViewList.size() + getDataListCount());
-        return this;
-    }
-
-    public SlimAdapter setEmptyView(View emptyView) {
-        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        emptyView.setLayoutParams(params);
-        emptyItemView = emptyView;
-        notifyDataSetChanged();
-        return this;
-    }
-
-    public SlimAdapter setEmptyView(Context context, int layoutRes) {
-        View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
-        setEmptyView(view);
-        return this;
-    }
-
-    public SlimAdapter setEmptyView(Context context, int layoutRes, OnCustomLayoutListener listener) {
-        View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
-        listener.onLayout(this, view);
-        setEmptyView(view);
-        return this;
-    }
-
+    // ====== header ======
 
     public SlimAdapter addHeader(Context context, int layoutRes, OnCustomLayoutListener listener) {
         View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
@@ -444,6 +370,18 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         return this;
     }
 
+    public SlimAdapter setHeaderWholeLine(boolean headerWholeLine) {
+        this.headerWholeLine = headerWholeLine;
+        return this;
+    }
+
+    public SlimAdapter removeHeader(int index) {
+        this.headerItemViewList.remove(index);
+        notifyItemChanged(index);
+        return this;
+    }
+
+    //====== footer ======
 
     public SlimAdapter addFooter(Context context, int layoutRes, OnCustomLayoutListener listener) {
         View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
@@ -471,29 +409,99 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         return this;
     }
 
-
-    public SlimAdapter setHeaderWholeLine(boolean headerWholeLine) {
-        this.headerWholeLine = headerWholeLine;
-        return this;
-    }
-
-
     public SlimAdapter setFooterWholeLine(boolean footerWholeLine) {
         this.footerWholeLine = footerWholeLine;
         return this;
     }
 
+    public SlimAdapter removeFooter(int index) {
+        this.headerItemViewList.remove(index);
+        notifyItemChanged(index + headerItemViewList.size() + getDataListCount());
+        return this;
+    }
+
+    //====== load more =========
+
+    public SlimAdapter setLoadMoreView(LoadMoreView loadingView) {
+        this.loadMoreView = loadingView;
+        return this;
+    }
+
+
+    public void loadMoreEnd() {
+        if (onLoadMoreListener == null || getLoadMoreViewPosition() == 0) {
+            return;
+        }
+        isLoading = false;
+        loadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_END);
+        notifyItemChanged(getLoadMoreViewPosition());
+
+    }
+
+
+    public void loadMoreFail() {
+        if (onLoadMoreListener == null || getLoadMoreViewPosition() == 0) {
+            return;
+        }
+        isLoading = false;
+        loadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_FAIL);
+        notifyItemChanged(getLoadMoreViewPosition());
+    }
+
+
+    //======empty view =======
+    //设置Empty　View 时，该View只在header 、footer、dataList的大小都是０时显示
+
+    public SlimAdapter setEmptyView(View emptyView) {
+        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        emptyView.setLayoutParams(params);
+        emptyItemView = emptyView;
+        notifyDataSetChanged();
+        return this;
+    }
+
+    public SlimAdapter setEmptyView(Context context, int layoutRes) {
+        View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
+        setEmptyView(view);
+        return this;
+    }
+
+    public SlimAdapter setEmptyView(Context context, int layoutRes, OnCustomLayoutListener listener) {
+        View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
+        listener.onLayout(this, view);
+        setEmptyView(view);
+        return this;
+    }
+
+    // ======= listener =======
+
+    public SlimAdapter setOnItemClickListener(OnItemClickListener listener) {
+        this.onItemClickListener = listener;
+        return this;
+    }
+
+    public SlimAdapter setOnItemLongClickListener(OnItemLongClickListener listener) {
+        this.onItemLongClickListener = listener;
+        return this;
+    }
+
+
+    public SlimAdapter setOnLoadMoreListener(OnLoadMoreListener onLoadMoreListener) {
+        this.onLoadMoreListener = onLoadMoreListener;
+        isLoading = false;
+        return this;
+    }
+
+    //====== 其他 =======
+
+
     private void autoLoadMore(int position) {
 
-        if (!isHasLoadMoreView()) {
+        if (!isShowLoadMoreView(position)) {
             return;
         }
 
-        if (getLoadMoreViewPosition() == 0) {
-            return;
-        }
-
-        if (position < getItemCount() - 1) {
+        if (position < getItemCount() -1){
             return;
         }
         if (loadMoreView.getLoadMoreStatus() != LoadMoreView.STATUS_DEFAULT) {
@@ -546,13 +554,14 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
         return viewType <= BODY_VIEW_TYPE;
     }
 
-    private boolean isHasLoadMoreView() {
-        return loadMoreView != null && onLoadMoreListener != null;
+    private boolean isShowLoadMoreView(int position) {
+        return onLoadMoreListener != null && position != 0 && position == getLoadMoreViewPosition();
     }
 
     private int getLoadMoreViewPosition() {
         return headerItemViewList.size() + getDataListCount() + footerItemViewList.size();
     }
+
 
     private int getDataListCount() {
         if (dataList == null) {
