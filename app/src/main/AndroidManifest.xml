@@ -30,6 +30,7 @@
         <activity android:name=".ui.DifferentDataTypeActivity" />
         <activity android:name=".ui.HeaderAndFooterActivity" />
         <activity android:name=".ui.EmptyViewActivity" />
+        <activity android:name=".ui.TestActivity" />
     </application>
 
 </manifest>

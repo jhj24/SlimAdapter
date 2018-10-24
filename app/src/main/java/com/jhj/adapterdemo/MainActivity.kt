@@ -15,7 +15,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recyclerview)
 
-        val list = arrayListOf<String>("普通布局", "不同数据类型布局", "同数据类型不同显示样式", "带标题和结尾布局", "加载更多", "没有数据的布局")
+        val list = arrayListOf<String>("普通布局", "不同数据类型布局", "同数据类型不同显示样式", "带标题和结尾布局", "加载更多", "没有数据的布局", "测试")
 
         SlimAdapter.creator(LinearLayoutManager(this))
                 .register<String>(R.layout.list_item_string) { injector, bean, position ->
@@ -31,9 +31,9 @@ class MainActivity : AppCompatActivity() {
                         3 -> startActivity<HeaderAndFooterActivity>()
                         4 -> startActivity<LoadMoreActivity>()
                         5 -> startActivity<EmptyViewActivity>()
+                        6 -> startActivity<TestActivity>()
                     }
                 }
-
 
     }
 }
