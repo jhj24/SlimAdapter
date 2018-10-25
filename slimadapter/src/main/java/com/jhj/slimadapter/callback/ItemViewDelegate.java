@@ -1,4 +1,4 @@
-package com.jhj.slimadapter.adapter;
+package com.jhj.slimadapter.callback;
 
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;

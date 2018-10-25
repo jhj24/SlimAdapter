@@ -1,8 +1,9 @@
 package com.jhj.slimadapter.listener;
 
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-import com.jhj.slimadapter.adapter.SlimAdapter;
+import com.jhj.slimadapter.adapter.BaseAdapter;
 
 /**
  * 自定义标题或尾部时自定义布局回调
@@ -11,5 +12,5 @@ import com.jhj.slimadapter.adapter.SlimAdapter;
  */
 
 public interface OnCustomLayoutListener {
-    void onLayout(SlimAdapter adapter, View view);
+    void onLayout(BaseAdapter adapter, View view);
 }

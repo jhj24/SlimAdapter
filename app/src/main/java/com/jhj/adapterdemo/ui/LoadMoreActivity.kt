@@ -34,7 +34,7 @@ class LoadMoreActivity : AppCompatActivity() {
                 .attachTo(recyclerView)
                 .setOnLoadMoreListener {
                     if (isHasData) {
-                        setData(it)
+                        setData(it as SlimAdapter)
                     } else {
                         it.loadMoreEnd()
                     }

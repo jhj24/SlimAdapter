@@ -1,6 +1,6 @@
 package com.jhj.slimadapter.listener;
 
-import com.jhj.slimadapter.adapter.SlimAdapter;
+import com.jhj.slimadapter.adapter.BaseAdapter;
 
 /**
  * 加载更多
@@ -10,5 +10,5 @@ import com.jhj.slimadapter.adapter.SlimAdapter;
 
 public interface OnLoadMoreListener {
 
-    void onLoadMore(SlimAdapter slimAdapter);
+    void onLoadMore(BaseAdapter adapter);
 }

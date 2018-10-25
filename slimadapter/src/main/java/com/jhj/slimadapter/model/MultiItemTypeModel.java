@@ -1,6 +1,6 @@
 package com.jhj.slimadapter.model;
 
-import com.jhj.slimadapter.adapter.ItemViewCallback;
+import com.jhj.slimadapter.callback.ItemViewCallback;
 import com.jhj.slimadapter.adapter.SlimAdapter;
 
 /**

@@ -1,4 +1,4 @@
-package com.jhj.slimadapter.drag;
+package com.jhj.slimadapter.itemtouch;
 
 import android.graphics.Canvas;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,7 +12,7 @@ import com.jhj.slimadapter.adapter.DraggableAdapter;
  * Created by jhj on 18-10-23.
  */
 
-public class DragItemTouchHelper extends ItemTouchHelper.Callback {
+public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     private final DraggableAdapter mAdapter;
 
@@ -25,7 +25,7 @@ public class DragItemTouchHelper extends ItemTouchHelper.Callback {
     private boolean isSwiping;
 
 
-    public DragItemTouchHelper(DraggableAdapter mAdapter) {
+    public ItemTouchHelperCallback(DraggableAdapter mAdapter) {
         this.mAdapter = mAdapter;
     }
 

@@ -1,32 +1,38 @@
 package com.jhj.slimadapter.adapter;
 
 import android.graphics.Canvas;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
-import com.jhj.slimadapter.drag.DragItemTouchHelper;
+import com.jhj.slimadapter.callback.ItemViewCallback;
+import com.jhj.slimadapter.callback.ItemViewDelegate;
+import com.jhj.slimadapter.holder.ViewInjector;
+import com.jhj.slimadapter.itemtouch.ItemTouchHelperCallback;
 import com.jhj.slimadapter.listener.OnItemDragListener;
 import com.jhj.slimadapter.listener.OnItemSwipeListener;
+import com.jhj.slimadapter.model.MultiItemTypeModel;
 
+import java.lang.reflect.Type;
 import java.util.Collections;
 
 /**
- * drag and swipe
+ * 在　SlimAdapter 的基础上可以实现长按拖动，滑动删除（除了标题和结尾外的的布局）
  * <p>
  * Created by jhj on 18-10-23.
  */
 
-public class DraggableAdapter extends SlimAdapter {
+public class DraggableAdapter extends BaseAdapter<DraggableAdapter> {
 
     private OnItemDragListener mOnItemDragListener;
     private OnItemSwipeListener mOnItemSwipeListener;
     private boolean itemDragEnabled = false;
     private boolean itemSwipeEnabled = false;
-    private DragItemTouchHelper drag;
+    private ItemTouchHelperCallback itemTouchHelperCallback;
 
 
     private DraggableAdapter(RecyclerView.LayoutManager manager) {
-        super(manager);
+        this.layoutManager = manager;
     }
 
     public static DraggableAdapter creator(RecyclerView.LayoutManager manager) {
@@ -35,8 +41,8 @@ public class DraggableAdapter extends SlimAdapter {
 
 
     public DraggableAdapter setItemTouchHelper() {
-        drag = new DragItemTouchHelper(this);
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(drag);
+        itemTouchHelperCallback = new ItemTouchHelperCallback(this);
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(itemTouchHelperCallback);
         itemTouchHelper.attachToRecyclerView(getRecyclerView());
         return this;
     }
@@ -49,7 +55,7 @@ public class DraggableAdapter extends SlimAdapter {
     }
 
     public DraggableAdapter setDragFlags(int dragFlags) {
-        drag.setDragFlags(dragFlags);
+        itemTouchHelperCallback.setDragFlags(dragFlags);
         return this;
     }
 
@@ -59,7 +65,7 @@ public class DraggableAdapter extends SlimAdapter {
     }
 
     public DraggableAdapter setMoveThreshold(float moveThreshold) {
-        drag.setMoveThreshold(moveThreshold);
+        itemTouchHelperCallback.setMoveThreshold(moveThreshold);
         return this;
     }
 
@@ -72,7 +78,7 @@ public class DraggableAdapter extends SlimAdapter {
     }
 
     public DraggableAdapter setSwipeFlags(int swipeFlags) {
-        drag.setSwipeFlags(swipeFlags);
+        itemTouchHelperCallback.setSwipeFlags(swipeFlags);
         return this;
     }
 
@@ -82,7 +88,7 @@ public class DraggableAdapter extends SlimAdapter {
     }
 
     public DraggableAdapter setSwipeThreshold(float swipeThreshold) {
-        drag.setSwipeThreshold(swipeThreshold);
+        itemTouchHelperCallback.setSwipeThreshold(swipeThreshold);
         return this;
     }
 
