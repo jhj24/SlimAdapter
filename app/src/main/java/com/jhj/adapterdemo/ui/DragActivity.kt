@@ -12,9 +12,10 @@ import kotlinx.android.synthetic.main.activity_recyclerview.*
 import org.jetbrains.anko.toast
 
 /**
+ * 拖拽、滑动删除
  * Created by jhj on 18-10-23.
  */
-class TestActivity : AppCompatActivity() {
+class DragActivity : AppCompatActivity() {
 
     val dataList = arrayListOf<String>("刘德华", "周杰伦", "成龙", "李连杰", "周星驰", "周润华", "吴京", "黄渤", "王宝强", "徐峥")
     val handler = Handler()
@@ -26,29 +27,23 @@ class TestActivity : AppCompatActivity() {
         val textView = TextView(this)
         textView.text = "222"
 
-        val adapter = DraggableAdapter.creator(LinearLayoutManager(this));
-
-        adapter
+        val flag = ItemTouchHelper.UP or ItemTouchHelper.DOWN;
+        DraggableAdapter.creator(LinearLayoutManager(this))
                 .register<String>(R.layout.list_item_string) { injector, bean, position ->
-                    injector.text(R.id.textView, bean)
+                    injector.text(R.id.textView, bean.toString())
+
 
                 }
                 .setOnItemClickListener { recyclerView, view, position ->
                     toast(position.toString() + "——>" + dataList[position])
                 }
-                /*.setOnItemLongClickListener { recyclerView, view, position ->
+                .setOnItemLongClickListener { recyclerView, view, position ->
                     toast(".....")
                     true
-                }*/
+                }
                 .attachTo(recyclerView)
                 .updateData(dataList)
 
-        val flag = ItemTouchHelper.UP or ItemTouchHelper.DOWN;
-        adapter.setItemTouchHelper()
-                .setDragItem(true)
-                .setDragFlags(flag)
-
-                .setSwipeItem(true)
 
 
     }
