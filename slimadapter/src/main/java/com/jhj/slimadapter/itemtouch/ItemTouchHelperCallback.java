@@ -6,6 +6,10 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
 import com.jhj.slimadapter.adapter.DraggableAdapter;
+import com.jhj.slimadapter.listener.OnItemDragListener;
+import com.jhj.slimadapter.listener.OnItemSwipeListener;
+
+import java.util.Collections;
 
 /**
  * 实现　recyclerView 可拖拽滑动
@@ -14,7 +18,10 @@ import com.jhj.slimadapter.adapter.DraggableAdapter;
 
 public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
-    private final DraggableAdapter mAdapter;
+    private DraggableAdapter mAdapter;
+
+    private OnItemDragListener dragListener;
+    private OnItemSwipeListener swipeListener;
 
     private float moveThreshold = 0.1f;
     private float swipeThreshold = 0.5f;
@@ -23,32 +30,41 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     private boolean isDragging;
     private boolean isSwiping;
-    private boolean isFadeOutAnim = true;
+    private boolean isSwipeFadeOutAnim = true;
 
 
     public ItemTouchHelperCallback(DraggableAdapter mAdapter) {
         this.mAdapter = mAdapter;
     }
 
+    public void setDragFlags(int dragFlags) {
+        this.dragFlags = dragFlags;
+    }
+
+
+    public void setOnItemDragListener(OnItemDragListener listener) {
+        this.dragListener = listener;
+    }
 
     public void setMoveThreshold(float moveThreshold) {
         this.moveThreshold = moveThreshold;
     }
 
-    public void setSwipeThreshold(float swipeThreshold) {
-        this.swipeThreshold = swipeThreshold;
-    }
-
-    public void setDragFlags(int dragFlags) {
-        this.dragFlags = dragFlags;
-    }
 
     public void setSwipeFlags(int swipeFlags) {
         this.swipeFlags = swipeFlags;
     }
 
-    public void setFadeOutAnim(boolean fadeOutAnim) {
-        isFadeOutAnim = fadeOutAnim;
+    public void setSwipeFadeOutAnim(boolean swipeFadeOutAnim) {
+        isSwipeFadeOutAnim = swipeFadeOutAnim;
+    }
+
+    public void setOnItemSwipeListener(OnItemSwipeListener listener) {
+        this.swipeListener = listener;
+    }
+
+    public void setSwipeThreshold(float swipeThreshold) {
+        this.swipeThreshold = swipeThreshold;
     }
 
     /**
@@ -86,7 +102,20 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
     @Override
     public void onMoved(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int fromPos, RecyclerView.ViewHolder target, int toPos, int x, int y) {
         super.onMoved(recyclerView, viewHolder, fromPos, target, toPos, x, y);
-        mAdapter.onItemDragMoving(viewHolder, target);
+        if (fromPos < toPos) {
+            for (int i = fromPos; i < toPos; i++) {
+                Collections.swap(mAdapter.getDataList(), i, i + 1);
+            }
+        } else {
+            for (int i = fromPos; i > toPos; i--) {
+                Collections.swap(mAdapter.getDataList(), i, i - 1);
+            }
+        }
+        mAdapter.notifyItemMoved(viewHolder.getAdapterPosition(), target.getAdapterPosition());
+        if (dragListener != null) {
+            dragListener.onItemDragMoving(viewHolder, fromPos, target, toPos);
+        }
+
     }
 
     /**
@@ -98,7 +127,13 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
         if (isBodyViewHolder(viewHolder)) {
-            mAdapter.onItemSwiped(viewHolder);
+            int pos = getViewHolderPosition(viewHolder);
+            mAdapter.getDataList().remove(pos);
+            mAdapter.notifyItemRemoved(viewHolder.getAdapterPosition());
+            if (swipeListener != null) {
+                swipeListener.onItemSwiped(viewHolder, pos);
+            }
+
         }
     }
 
@@ -114,10 +149,14 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
     @Override
     public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
         if (actionState == ItemTouchHelper.ACTION_STATE_DRAG && isBodyViewHolder(viewHolder)) {
-            mAdapter.onItemDragStart(viewHolder);
+            if (dragListener != null) {
+                dragListener.onItemDragStart(viewHolder, getViewHolderPosition(viewHolder));
+            }
             isDragging = true;
         } else if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE && isBodyViewHolder(viewHolder)) {
-            mAdapter.onItemSwipeStart(viewHolder);
+            if (swipeListener != null) {
+                swipeListener.onItemSwipeStart(viewHolder, getViewHolderPosition(viewHolder));
+            }
             isSwiping = true;
         }
         super.onSelectedChanged(viewHolder, actionState);
@@ -137,11 +176,15 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
         }
 
         if (isDragging) {
-            mAdapter.onItemDragEnd(viewHolder);
+            if (dragListener != null) {
+                dragListener.onItemDragEnd(viewHolder, getViewHolderPosition(viewHolder));
+            }
             isDragging = false;
         }
         if (isSwiping) {
-            mAdapter.onItemSwipeClear(viewHolder);
+            if (swipeListener != null) {
+                swipeListener.clearView(viewHolder, getViewHolderPosition(viewHolder));
+            }
             isSwiping = false;
         }
 
@@ -205,7 +248,7 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
     public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
         // 判断当前是否是swipe方式：侧滑。
         if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE && isBodyViewHolder(viewHolder)) {
-            if (isFadeOutAnim()) {
+            if (isSwipeFadeOutAnim()) {
                 //1.ItemView--ViewHolder; 2.侧滑条目的透明度程度关联谁？dX(delta增量，范围：当前条目-width~width)。
                 RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
                 float alpha = 1;
@@ -218,28 +261,27 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
                     }
                 }
                 viewHolder.itemView.setAlpha(alpha);//1~0
-            } else {
-                mAdapter.onItemSwiping(c, viewHolder, dX, dY, isCurrentlyActive);
             }
-
+            if (swipeListener != null) {
+                swipeListener.onItemSwipeMoving(c, viewHolder, dX, dY, isCurrentlyActive);
+            }
         }
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
     }
 
-    private boolean isFadeOutAnim() {
-        return isFadeOutAnim;
+    private boolean isSwipeFadeOutAnim() {
+        return isSwipeFadeOutAnim;
     }
 
-    /**
-     * 判断item是不是普通的itemView,
-     *
-     * @param viewHolder 　viewHolder
-     * @return true－是普通布局，可以拖拽和滑动
-     */
     private boolean isBodyViewHolder(RecyclerView.ViewHolder viewHolder) {
         int viewType = viewHolder.getItemViewType();
         return !mAdapter.isHeaderView(viewType) && !mAdapter.isFooterView(viewType) &&
                 !mAdapter.isEmptyView(viewType) && !mAdapter.isLoadMoreView(viewType);
 
     }
+
+    private int getViewHolderPosition(RecyclerView.ViewHolder viewHolder) {
+        return viewHolder.getAdapterPosition() - mAdapter.getHeaderViewCount();
+    }
+
 }

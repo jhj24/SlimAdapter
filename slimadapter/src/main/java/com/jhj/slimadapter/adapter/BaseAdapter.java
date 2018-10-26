@@ -50,7 +50,7 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
     private Map<Type, ItemViewDelegate> itemViewMap = new HashMap<>();
     private SparseArray<ItemViewDelegate> multiViewMap = new SparseArray<>();
 
-    private ArrayList<?> dataList;
+    private List<?> dataList;
     private RecyclerView recyclerView;
 
 
@@ -66,6 +66,17 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
     private boolean isLoading = false;
     private boolean headerWholeLine = true;
     private boolean footerWholeLine = true;
+
+    public List<?> getDataList() {
+        return dataList;
+    }
+
+    public RecyclerView getRecyclerView() {
+        if (recyclerView == null) {
+            throw new NullPointerException("RecyclerView is null,Please first use attachTo(recyclerView)");
+        }
+        return recyclerView;
+    }
 
     @SuppressWarnings("unchecked")
     public <D> T register(final int layoutRes, final ItemViewCallback<D> callback) {
@@ -133,7 +144,7 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
     }
 
     @SuppressWarnings("unchecked")
-    public T updateData(ArrayList<?> dataList) {
+    public T updateData(List<?> dataList) {
         this.dataList = dataList;
         if (onLoadMoreListener != null) {
             isLoading = false;
@@ -143,10 +154,6 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
         return (T) this;
     }
 
-
-    public ArrayList<?> getDataList() {
-        return dataList;
-    }
 
     @SuppressWarnings("unchecked")
     public T remove(int index) {
@@ -195,13 +202,20 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
         return (T) this;
     }
 
+    @SuppressWarnings("unchecked")
+    public T setHeaderWholeLine(boolean headerWholeLine) {
+        this.headerWholeLine = headerWholeLine;
+        return (T) this;
+    }
+
+    //====== footer ======
+
     public T addFooter(Context context, int layoutRes, OnCustomLayoutListener listener) {
         View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
         listener.onLayout(this, view);
         return addFooter(view);
     }
 
-    //====== footer ======
 
     public T addFooter(Context context, int layoutRes) {
         return addFooter(LayoutInflater.from(context).inflate(layoutRes, null, false));
@@ -231,6 +245,21 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
     }
 
     @SuppressWarnings("unchecked")
+    public T setFooterWholeLine(boolean footerWholeLine) {
+        this.footerWholeLine = footerWholeLine;
+        return (T) this;
+    }
+
+    //====== load more =========
+
+    @SuppressWarnings("unchecked")
+    public T setOnLoadMoreListener(OnLoadMoreListener onLoadMoreListener) {
+        this.onLoadMoreListener = onLoadMoreListener;
+        isLoading = false;
+        return (T) this;
+    }
+
+    @SuppressWarnings("unchecked")
     public T setLoadMoreView(LoadMoreView loadingView) {
         this.loadMoreView = loadingView;
         return (T) this;
@@ -245,7 +274,6 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
         notifyItemChanged(getLoadMoreViewPosition());
     }
 
-    //====== load more =========
 
     public void loadMoreFail() {
         if (onLoadMoreListener == null || getLoadMoreViewPosition() == 0) {
@@ -254,22 +282,6 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
         isLoading = false;
         loadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_FAIL);
         notifyItemChanged(getLoadMoreViewPosition());
-    }
-
-    @SuppressWarnings("unchecked")
-    public T setEmptyView(View emptyView) {
-        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        emptyView.setLayoutParams(params);
-        emptyItemView = emptyView;
-        notifyDataSetChanged();
-        return (T) this;
-    }
-
-    @SuppressWarnings("unchecked")
-    public T setEmptyView(Context context, int layoutRes) {
-        View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
-        setEmptyView(view);
-        return (T) this;
     }
 
 
@@ -281,6 +293,22 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
         View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
         listener.onLayout(this, view);
         setEmptyView(view);
+        return (T) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public T setEmptyView(Context context, int layoutRes) {
+        View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
+        setEmptyView(view);
+        return (T) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public T setEmptyView(View emptyView) {
+        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        emptyView.setLayoutParams(params);
+        emptyItemView = emptyView;
+        notifyDataSetChanged();
         return (T) this;
     }
 
@@ -297,12 +325,6 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
         return (T) this;
     }
 
-    @SuppressWarnings("unchecked")
-    public T setOnLoadMoreListener(OnLoadMoreListener onLoadMoreListener) {
-        this.onLoadMoreListener = onLoadMoreListener;
-        isLoading = false;
-        return (T) this;
-    }
 
     @NonNull
     @Override
@@ -504,12 +526,13 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
         return viewType <= BODY_VIEW_TYPE;
     }
 
-    public RecyclerView getRecyclerView() {
-        if (recyclerView == null) {
-            throw new NullPointerException("RecyclerView is null,Please first use attachTo(recyclerView)");
-        }
-        return recyclerView;
+    public int getHeaderViewCount() {
+        return headerItemViewList.size();
     }
+
+    //====== 其他 =======
+
+
 
     private void autoLoadMore(int position) {
 
@@ -541,29 +564,13 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
 
     }
 
-    private boolean isFooterWholeLine() {
-        return footerWholeLine;
-    }
 
-
-    //====== 其他 =======
-
-    @SuppressWarnings("unchecked")
-    public T setFooterWholeLine(boolean footerWholeLine) {
-        this.footerWholeLine = footerWholeLine;
-        return (T) this;
-    }
-
-    private boolean isHeaderWholeLine() {
-        return headerWholeLine;
-    }
-
-    @SuppressWarnings("unchecked")
-    public T setHeaderWholeLine(boolean headerWholeLine) {
-        this.headerWholeLine = headerWholeLine;
-        return (T) this;
-    }
-
+    /**
+     * 是否加载更多，当位于０位置的时候，不显示
+     *
+     * @param position 　position
+     * @return boolean
+     */
     private boolean isShowLoadMoreView(int position) {
         return onLoadMoreListener != null && position != 0 && position == getLoadMoreViewPosition();
     }
@@ -580,9 +587,14 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
         }
     }
 
-    int getHeaderViewCount() {
-        return headerItemViewList.size();
+    private boolean isHeaderWholeLine() {
+        return headerWholeLine;
     }
+
+    private boolean isFooterWholeLine() {
+        return footerWholeLine;
+    }
+
 
     private void setFullSpan(RecyclerView.ViewHolder holder) {
         if (holder.itemView.getLayoutParams() instanceof StaggeredGridLayoutManager.LayoutParams) {
@@ -593,7 +605,7 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
     }
 
 
-    <D> Type getDataActualType(ItemViewCallback<D> callback) {
+    private <D> Type getDataActualType(ItemViewCallback<D> callback) {
         Type[] interfaces = callback.getClass().getGenericInterfaces();
         for (Type type : interfaces) {
             if (type instanceof ParameterizedType) {

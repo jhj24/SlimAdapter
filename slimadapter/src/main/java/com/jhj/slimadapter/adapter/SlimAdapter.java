@@ -1,14 +1,6 @@
 package com.jhj.slimadapter.adapter;
 
-import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-
-import com.jhj.slimadapter.callback.ItemViewCallback;
-import com.jhj.slimadapter.callback.ItemViewDelegate;
-import com.jhj.slimadapter.holder.ViewInjector;
-import com.jhj.slimadapter.model.MultiItemTypeModel;
-
-import java.lang.reflect.Type;
 
 /**
  * 简化Adapter
