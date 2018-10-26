@@ -1,7 +1,7 @@
 package com.jhj.slimadapter.model;
 
 import com.jhj.slimadapter.callback.ItemViewCallback;
-import com.jhj.slimadapter.adapter.SlimAdapter;
+import com.jhj.slimadapter.SlimAdapter;
 
 /**
  * 当同一种数据类型显示不同的布局时，实体类继承该接口，且{@link MultiItemTypeModel#getItemType()}方法的返回值必须与

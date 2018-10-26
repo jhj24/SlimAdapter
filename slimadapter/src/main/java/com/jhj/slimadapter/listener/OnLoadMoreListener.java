@@ -1,6 +1,6 @@
 package com.jhj.slimadapter.listener;
 
-import com.jhj.slimadapter.adapter.BaseAdapter;
+import com.jhj.slimadapter.BaseAdapter;
 
 /**
  * 加载更多

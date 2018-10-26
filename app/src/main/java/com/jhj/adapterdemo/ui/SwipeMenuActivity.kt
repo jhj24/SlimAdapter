@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import com.jhj.adapterdemo.R
-import com.jhj.slimadapter.adapter.SlimAdapter
+import com.jhj.slimadapter.DraggableAdapter
 import com.jhj.slimadapter.widget.SwipeMenuLayout
 import kotlinx.android.synthetic.main.activity_recyclerview.*
 import org.jetbrains.anko.toast
@@ -22,7 +22,7 @@ class SwipeMenuActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recyclerview)
 
-        SlimAdapter.creator(LinearLayoutManager(this))
+        DraggableAdapter.creator(LinearLayoutManager(this))
                 .register<String>(R.layout.list_item_swipe_menu) { injector, bean, position ->
                     val a = injector.getView<SwipeMenuLayout>(R.id.swipeMenuLayout)
                     injector.text(R.id.tv_content, bean)
@@ -38,6 +38,9 @@ class SwipeMenuActivity : AppCompatActivity() {
                 }
                 .attachTo(recyclerView)
                 .updateData(dataList)
+                .setItemTouchHelper()
+                .setDragItem(true)
+
     }
 
 }

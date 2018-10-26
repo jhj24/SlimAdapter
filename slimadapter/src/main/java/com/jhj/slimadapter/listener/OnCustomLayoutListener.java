@@ -1,9 +1,8 @@
 package com.jhj.slimadapter.listener;
 
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-import com.jhj.slimadapter.adapter.BaseAdapter;
+import com.jhj.slimadapter.BaseAdapter;
 
 /**
  * 自定义标题或尾部时自定义布局回调

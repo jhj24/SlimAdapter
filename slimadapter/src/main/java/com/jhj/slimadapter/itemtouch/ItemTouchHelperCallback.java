@@ -5,7 +5,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
-import com.jhj.slimadapter.adapter.DraggableAdapter;
+import com.jhj.slimadapter.DraggableAdapter;
 import com.jhj.slimadapter.listener.OnItemDragListener;
 import com.jhj.slimadapter.listener.OnItemSwipeListener;
 

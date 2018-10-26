@@ -8,7 +8,7 @@ import com.jhj.adapterdemo.bean.ApplyBean
 import com.jhj.adapterdemo.net.DialogCallback
 import com.jhj.adapterdemo.net.HttpConfig
 import com.jhj.httplibrary.httpcall.HttpCall
-import com.jhj.slimadapter.adapter.SlimAdapter
+import com.jhj.slimadapter.SlimAdapter
 import kotlinx.android.synthetic.main.activity_recyclerview.*
 import java.util.*
 

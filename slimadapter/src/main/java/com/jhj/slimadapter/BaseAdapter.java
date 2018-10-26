@@ -1,4 +1,4 @@
-package com.jhj.slimadapter.adapter;
+package com.jhj.slimadapter;
 
 import android.content.Context;
 import android.support.annotation.NonNull;

@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import com.jhj.adapterdemo.R
-import com.jhj.slimadapter.adapter.SlimAdapter
+import com.jhj.slimadapter.SlimAdapter
 import kotlinx.android.synthetic.main.activity_recyclerview.*
 import kotlinx.android.synthetic.main.list_item_string.view.*
 

@@ -6,7 +6,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.widget.TextView
 import com.jhj.adapterdemo.R
-import com.jhj.slimadapter.adapter.DraggableAdapter
+import com.jhj.slimadapter.DraggableAdapter
 import com.jhj.slimadapter.listener.OnItemDragListener
 import kotlinx.android.synthetic.main.activity_recyclerview.*
 import org.jetbrains.anko.toast
