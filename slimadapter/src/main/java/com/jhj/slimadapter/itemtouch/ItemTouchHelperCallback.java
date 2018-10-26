@@ -23,12 +23,33 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
     private boolean isDragging;
     private boolean isSwiping;
+    private boolean isFadeOutAnim = true;
 
 
     public ItemTouchHelperCallback(DraggableAdapter mAdapter) {
         this.mAdapter = mAdapter;
     }
 
+
+    public void setMoveThreshold(float moveThreshold) {
+        this.moveThreshold = moveThreshold;
+    }
+
+    public void setSwipeThreshold(float swipeThreshold) {
+        this.swipeThreshold = swipeThreshold;
+    }
+
+    public void setDragFlags(int dragFlags) {
+        this.dragFlags = dragFlags;
+    }
+
+    public void setSwipeFlags(int swipeFlags) {
+        this.swipeFlags = swipeFlags;
+    }
+
+    public void setFadeOutAnim(boolean fadeOutAnim) {
+        isFadeOutAnim = fadeOutAnim;
+    }
 
     /**
      * 设置是否处理拖拽事件和滑动事件，以及拖拽和滑动操作的方向
@@ -172,51 +193,41 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
     /**
      * 交互规则或者自定义的动画效果
      *
-     * @param c
-     * @param recyclerView
-     * @param viewHolder
-     * @param dX
-     * @param dY
-     * @param actionState
-     * @param isCurrentlyActive
+     * @param c                 画布
+     * @param recyclerView      recyclerView
+     * @param viewHolder        正在与用户进行交互的ViewHolder
+     * @param dX                用户动作引起的水平位移量
+     * @param dY                用户动作引起的垂直位移量
+     * @param actionState       动作（闲置、滑动、拖拽）
+     * @param isCurrentlyActive 果此视图当前正由用户控制，则为True,false它只是简单地动画回原始状态。
      */
     @Override
     public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
         // 判断当前是否是swipe方式：侧滑。
         if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE && isBodyViewHolder(viewHolder)) {
-
-            mAdapter.onItemSwiping(c, viewHolder, dX, dY, isCurrentlyActive);
-
-            //1.ItemView--ViewHolder; 2.侧滑条目的透明度程度关联谁？dX(delta增量，范围：当前条目-width~width)。
-            RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
-            float alpha = 1;
-            if (layoutManager instanceof LinearLayoutManager) {
-                int orientation = ((LinearLayoutManager) layoutManager).getOrientation();
-                if (orientation == LinearLayoutManager.HORIZONTAL) {
-                    alpha = 1 - Math.abs(dY) / viewHolder.itemView.getHeight();
-                } else if (orientation == LinearLayoutManager.VERTICAL) {
-                    alpha = 1 - Math.abs(dX) / viewHolder.itemView.getWidth();
+            if (isFadeOutAnim()) {
+                //1.ItemView--ViewHolder; 2.侧滑条目的透明度程度关联谁？dX(delta增量，范围：当前条目-width~width)。
+                RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+                float alpha = 1;
+                if (layoutManager instanceof LinearLayoutManager) {
+                    int orientation = ((LinearLayoutManager) layoutManager).getOrientation();
+                    if (orientation == LinearLayoutManager.HORIZONTAL) {
+                        alpha = 1 - Math.abs(dY) / viewHolder.itemView.getHeight();
+                    } else if (orientation == LinearLayoutManager.VERTICAL) {
+                        alpha = 1 - Math.abs(dX) / viewHolder.itemView.getWidth();
+                    }
                 }
+                viewHolder.itemView.setAlpha(alpha);//1~0
+            } else {
+                mAdapter.onItemSwiping(c, viewHolder, dX, dY, isCurrentlyActive);
             }
-            viewHolder.itemView.setAlpha(alpha);//1~0
+
         }
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
     }
 
-    public void setMoveThreshold(float moveThreshold) {
-        this.moveThreshold = moveThreshold;
-    }
-
-    public void setSwipeThreshold(float swipeThreshold) {
-        this.swipeThreshold = swipeThreshold;
-    }
-
-    public void setDragFlags(int dragFlags) {
-        this.dragFlags = dragFlags;
-    }
-
-    public void setSwipeFlags(int swipeFlags) {
-        this.swipeFlags = swipeFlags;
+    private boolean isFadeOutAnim() {
+        return isFadeOutAnim;
     }
 
     /**

@@ -1,19 +1,13 @@
 package com.jhj.slimadapter.adapter;
 
 import android.graphics.Canvas;
-import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
-import com.jhj.slimadapter.callback.ItemViewCallback;
-import com.jhj.slimadapter.callback.ItemViewDelegate;
-import com.jhj.slimadapter.holder.ViewInjector;
 import com.jhj.slimadapter.itemtouch.ItemTouchHelperCallback;
 import com.jhj.slimadapter.listener.OnItemDragListener;
 import com.jhj.slimadapter.listener.OnItemSwipeListener;
-import com.jhj.slimadapter.model.MultiItemTypeModel;
 
-import java.lang.reflect.Type;
 import java.util.Collections;
 
 /**
@@ -49,6 +43,11 @@ public class DraggableAdapter extends BaseAdapter<DraggableAdapter> {
 
     //======　drag　======
 
+    public boolean isLongPressDragEnable() {
+        return itemDragEnabled;
+    }
+
+
     public DraggableAdapter setDragItem(boolean isDrag) {
         this.itemDragEnabled = isDrag;
         return this;
@@ -71,9 +70,17 @@ public class DraggableAdapter extends BaseAdapter<DraggableAdapter> {
 
     //======= swipe =======
 
+    public boolean isItemSwipeEnable() {
+        return itemSwipeEnabled;
+    }
 
     public DraggableAdapter setSwipeItem(boolean isSwipe) {
         itemSwipeEnabled = isSwipe;
+        return this;
+    }
+
+    public DraggableAdapter setSwipeFadeOutAnim(boolean isFadeOutAnim) {
+        itemTouchHelperCallback.setFadeOutAnim(isFadeOutAnim);
         return this;
     }
 
@@ -167,13 +174,6 @@ public class DraggableAdapter extends BaseAdapter<DraggableAdapter> {
 
     //========　其他　========
 
-    public boolean isLongPressDragEnable() {
-        return itemDragEnabled;
-    }
-
-    public boolean isItemSwipeEnable() {
-        return itemSwipeEnabled;
-    }
 
     private int getViewHolderPosition(RecyclerView.ViewHolder viewHolder) {
         return viewHolder.getAdapterPosition() - getHeaderViewCount();

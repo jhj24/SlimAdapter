@@ -45,10 +45,10 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
     private static final int BODY_VIEW_TYPE = -0x00500000;
 
     RecyclerView.LayoutManager layoutManager;
-    List<Type> dataViewTypeList = new ArrayList<>();
-    List<Integer> multiViewTypeList = new ArrayList<>();
-    Map<Type, ItemViewDelegate> itemViewMap = new HashMap<>();
-    SparseArray<ItemViewDelegate> multiViewMap = new SparseArray<>();
+    private List<Type> dataViewTypeList = new ArrayList<>();
+    private List<Integer> multiViewTypeList = new ArrayList<>();
+    private Map<Type, ItemViewDelegate> itemViewMap = new HashMap<>();
+    private SparseArray<ItemViewDelegate> multiViewMap = new SparseArray<>();
 
     private ArrayList<?> dataList;
     private RecyclerView recyclerView;
