@@ -6,6 +6,7 @@ import android.graphics.Rect;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.View;
 
 /**
@@ -146,5 +147,37 @@ public class ItemDivider extends RecyclerView.ItemDecoration {
         super.onDrawOver(c, parent, state);
     }
 
+    private int spanSize = 0;
+    private int lastIndex = 0;
 
+    /**
+     * 获取pos位置在一行的下标
+     *
+     * @param recyclerView
+     * @param pos
+     * @return
+     */
+    public int getIndex(RecyclerView recyclerView, int pos) {
+        RecyclerView.LayoutManager manager = recyclerView.getLayoutManager();
+        if (manager instanceof GridLayoutManager) {
+            int span = ((GridLayoutManager) manager).getSpanCount();
+            int count = ((GridLayoutManager) manager).getSpanSizeLookup().getSpanSize(pos);
+            if (spanSize == 0) {
+                spanSize = count;
+                lastIndex = 0;
+                return 0;
+            } else {
+                if (spanSize + count > span) {
+                    lastIndex = 0;
+                    spanSize = count;
+                    return 0;
+                } else {
+                    lastIndex++;
+                    spanSize += count;
+                    return lastIndex;
+                }
+            }
+        }
+        return 0;
+    }
 }

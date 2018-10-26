@@ -2,6 +2,7 @@ package com.jhj.adapterdemo
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
 import com.jhj.adapterdemo.ui.*
 import com.jhj.slimadapter.SlimAdapter
@@ -15,8 +16,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recyclerview)
-        // val gridLayoutManager = GridLayoutManager(this, 4);
-        /*gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+        val gridLayoutManager = GridLayoutManager(this, 4);
+        gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
                 if (position == 0) {
                     return 3;
@@ -28,11 +29,11 @@ class MainActivity : AppCompatActivity() {
 
             }
 
-        }*/
+        }
 
         val list = arrayListOf<String>("普通布局", "不同数据类型布局", "同数据类型不同显示样式", "带标题和结尾布局", "加载更多", "没有数据的布局", "拖拽和滑动删除", "滑动菜单")
 
-        SlimAdapter.creator(LinearLayoutManager(this))
+        SlimAdapter.creator(gridLayoutManager)
                 .register<String>(R.layout.list_item_string) { injector, bean, position ->
                     injector.text(R.id.textView, bean)
                 }
