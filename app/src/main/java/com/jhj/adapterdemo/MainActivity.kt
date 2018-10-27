@@ -5,7 +5,6 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import com.jhj.adapterdemo.ui.*
 import com.jhj.slimadapter.SlimAdapter
-import com.jhj.slimadapter.itemdecoration.ItemDivider
 import kotlinx.android.synthetic.main.activity_recyclerview.*
 import org.jetbrains.anko.startActivity
 
@@ -19,9 +18,11 @@ class MainActivity : AppCompatActivity() {
         gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
                 if (position == 0) {
-                    return 3;
-                } else if (position == 3 || position == 4) {
                     return 2;
+                } else if (position == 3) {
+                    return 2;
+                } else if (position == 4) {
+                    return 3;
                 } else {
                     return 1;
                 }
@@ -30,9 +31,9 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        val list = arrayListOf<String>("普通布局", "不同数据类型布局", "同数据类型不同显示样式", "带标题和结尾布局", "加载更多", "没有数据的布局", "拖拽和滑动删除", "滑动菜单","普通布局","滑动菜单","普通布局","滑动菜单","普通布局","滑动菜单","普通布局"
+        val list = arrayListOf<String>("普通布局", "不同数据类型布局", "同数据类型不同显示样式", "带标题和结尾布局", "加载更多", "没有数据的布局", "拖拽和滑动删除", "滑动菜单", "普通布局", "滑动菜单", "普通布局", "滑动菜单", "普通布局", "滑动菜单", "普通布局"
 
-       )
+        )
 
         SlimAdapter.creator(gridLayoutManager)
                 //SlimAdapter.creator(LinearLayoutManager(this, LinearLayout.HORIZONTAL, false))

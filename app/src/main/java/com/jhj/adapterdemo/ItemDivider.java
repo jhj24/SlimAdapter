@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * GridItemDecoration
+ * 设置表格布局时，最好分割先的颜色同recyclerView的样色相同，这样的效果比较好看，因为当你设置spanSizeLookup时，不一定能出现想要的效果
+ * <p>
  * Created by jhj on 18-10-27.
  */
 
@@ -68,7 +71,12 @@ public class ItemDivider extends RecyclerView.ItemDecoration {
     private void drawVertical(Canvas c, RecyclerView parent, int i) {
         View child = parent.getChildAt(i);
         int right = child.getRight() + dividerWith / 2;
-        c.drawLine(right, child.getTop(), right, child.getBottom(), paint);
+        if (!isLastRaw(i)){
+            c.drawLine(right, child.getTop(), right, child.getBottom(), paint);
+        }
+        if (isLastRaw(i) && parent.getAdapter().getItemCount() > i+1){
+            c.drawLine(right, child.getTop(), right, child.getBottom(), paint);
+        }
 
     }
 
