@@ -3,7 +3,6 @@ package com.jhj.adapterdemo
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.LinearLayoutManager
 import com.jhj.adapterdemo.ui.*
 import com.jhj.slimadapter.SlimAdapter
 import com.jhj.slimadapter.itemdecoration.ItemDivider
@@ -31,14 +30,18 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        val list = arrayListOf<String>("普通布局", "不同数据类型布局", "同数据类型不同显示样式", "带标题和结尾布局", "加载更多", "没有数据的布局", "拖拽和滑动删除", "滑动菜单")
+        val list = arrayListOf<String>("普通布局", "不同数据类型布局", "同数据类型不同显示样式", "带标题和结尾布局", "加载更多", "没有数据的布局", "拖拽和滑动删除", "滑动菜单","普通布局","滑动菜单","普通布局","滑动菜单","普通布局","滑动菜单","普通布局"
+
+       )
 
         SlimAdapter.creator(gridLayoutManager)
+                //SlimAdapter.creator(LinearLayoutManager(this, LinearLayout.HORIZONTAL, false))
+                //  SlimAdapter.creator(LinearLayoutManager(this))
                 .register<String>(R.layout.list_item_string) { injector, bean, position ->
                     injector.text(R.id.textView, bean)
                 }
                 .attachTo(recyclerView)
-                .addItemDecoration(ItemDivider())
+                .addItemDecoration(com.jhj.adapterdemo.ItemDivider())
                 .updateData(list)
                 .setOnItemClickListener { recyclerView, view, position ->
                     when (position) {
