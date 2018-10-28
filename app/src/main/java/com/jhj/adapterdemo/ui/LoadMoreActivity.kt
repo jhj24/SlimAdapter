@@ -9,6 +9,7 @@ import com.jhj.adapterdemo.net.DialogCallback
 import com.jhj.adapterdemo.net.HttpConfig
 import com.jhj.httplibrary.httpcall.HttpCall
 import com.jhj.slimadapter.SlimAdapter
+import com.jhj.slimadapter.itemdecoration.LineItemDecoration
 import kotlinx.android.synthetic.main.activity_recyclerview.*
 import java.util.*
 
@@ -17,7 +18,7 @@ import java.util.*
  */
 class LoadMoreActivity : AppCompatActivity() {
 
-    val pageSize = 15;
+    val pageSize = 14;
     var pageNo = 0;
     var isHasData = false;
     val dataList = arrayListOf<ApplyBean>()
@@ -26,12 +27,14 @@ class LoadMoreActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recyclerview)
 
+
         val adapter = SlimAdapter.creator(LinearLayoutManager(this))
-                .register<ApplyBean>(R.layout.list_item_string) { injector, bean, position ->
+                .register<ApplyBean>(R.layout.list_item_white) { injector, bean, position ->
                     injector.text(R.id.textView, bean.leaveTypeName)
 
                 }
                 .attachTo(recyclerView)
+                .addItemDecoration(LineItemDecoration())
                 .setOnLoadMoreListener {
                     if (isHasData) {
                         setData(it as SlimAdapter)
@@ -39,7 +42,6 @@ class LoadMoreActivity : AppCompatActivity() {
                         it.loadMoreEnd()
                     }
                 }
-
         setData(adapter)
     }
 

@@ -5,8 +5,9 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import com.jhj.adapterdemo.R
 import com.jhj.slimadapter.SlimAdapter
+import com.jhj.slimadapter.itemdecoration.LineItemDecoration
 import kotlinx.android.synthetic.main.activity_recyclerview.*
-import kotlinx.android.synthetic.main.list_item_string.view.*
+import kotlinx.android.synthetic.main.list_item_white.view.*
 
 /**
  * Created by jhj on 18-10-22.
@@ -21,16 +22,17 @@ class HeaderAndFooterActivity : AppCompatActivity() {
 
 
         SlimAdapter.creator(LinearLayoutManager(this))
-                .register<String>(R.layout.list_item_string) { injector, bean, position ->
+                .register<String>(R.layout.list_item_white) { injector, bean, position ->
                     injector.text(R.id.textView, bean)
 
                 }
 
                 .attachTo(recyclerView)
-                .addHeader(this, R.layout.list_item_int) {adapter,it->
+                .addItemDecoration(LineItemDecoration())
+                .addHeader(this, R.layout.list_item_putple) { adapter, it ->
                     it.textView.text = "这是一个标题"
                 }
-                .addFooter(this, R.layout.list_item_int) {adapter,it->
+                .addFooter(this, R.layout.list_item_putple) { adapter, it ->
                     it.textView.text = "这是一个结尾"
                 }
                 .updateData(dataList)

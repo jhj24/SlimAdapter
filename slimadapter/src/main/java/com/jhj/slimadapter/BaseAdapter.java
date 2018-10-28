@@ -468,7 +468,7 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
     public void onViewAttachedToWindow(@NonNull SlimViewHolder holder) {
         super.onViewAttachedToWindow(holder);
         int type = holder.getItemViewType();
-        if (isHeaderView(type) || isFooterView(type) || isLoadMoreView(type)) {
+        if (isHeaderView(type) || isFooterView(type) || isLoadMoreView(type) || isEmptyView(type)) {
             setFullSpan(holder);
         } else {
             //addAnimation(holder);
@@ -492,6 +492,8 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
                     } else if (isFooterView(viewType) && isFooterWholeLine()) {
                         return gridLayoutManager.getSpanCount();
                     } else if (isHeaderView(viewType) && isHeaderWholeLine()) {
+                        return gridLayoutManager.getSpanCount();
+                    } else if (isEmptyView(viewType)) {
                         return gridLayoutManager.getSpanCount();
                     }
 
@@ -531,7 +533,6 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
     }
 
     //====== 其他 =======
-
 
 
     private void autoLoadMore(int position) {

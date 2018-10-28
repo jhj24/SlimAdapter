@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import com.jhj.adapterdemo.R
 import com.jhj.slimadapter.DraggableAdapter
+import com.jhj.slimadapter.itemdecoration.LineItemDecoration
 import com.jhj.slimadapter.widget.SwipeMenuLayout
 import kotlinx.android.synthetic.main.activity_recyclerview.*
 import org.jetbrains.anko.toast
@@ -37,9 +38,8 @@ class SwipeMenuActivity : AppCompatActivity() {
 
                 }
                 .attachTo(recyclerView)
+                .addItemDecoration(LineItemDecoration())
                 .updateData(dataList)
-                .setItemTouchHelper()
-                .setDragItem(true)
 
     }
 

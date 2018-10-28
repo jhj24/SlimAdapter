@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView
 import android.widget.TextView
 import com.jhj.adapterdemo.R
 import com.jhj.slimadapter.DraggableAdapter
+import com.jhj.slimadapter.itemdecoration.LineItemDecoration
 import com.jhj.slimadapter.listener.OnItemDragListener
 import kotlinx.android.synthetic.main.activity_recyclerview.*
 import org.jetbrains.anko.toast
@@ -27,10 +28,8 @@ class DragActivity : AppCompatActivity() {
         textView.text = "222"
 
         DraggableAdapter.creator(LinearLayoutManager(this))
-                .register<String>(R.layout.list_item_string) { injector, bean, position ->
+                .register<String>(R.layout.list_item_putple) { injector, bean, position ->
                     injector.text(R.id.textView, bean.toString())
-
-
                 }
                 .setOnItemClickListener { recyclerView, view, position ->
                     toast(position.toString() + "——>" + dataList[position])
@@ -40,6 +39,7 @@ class DragActivity : AppCompatActivity() {
                     true
                 }
                 .attachTo(recyclerView)
+                .addItemDecoration(LineItemDecoration())
                 .updateData(dataList)
                 .setItemTouchHelper()
                 .setDragItem(true)

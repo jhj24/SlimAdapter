@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import com.jhj.adapterdemo.R
 import com.jhj.slimadapter.SlimAdapter
+import com.jhj.slimadapter.itemdecoration.LineItemDecoration
 import kotlinx.android.synthetic.main.activity_recyclerview.*
 
 /**
@@ -19,11 +20,12 @@ class CommonActivity : AppCompatActivity() {
         setContentView(R.layout.activity_recyclerview)
 
         SlimAdapter.creator(LinearLayoutManager(this))
-                .register<String>(R.layout.list_item_string) { injector, bean, position ->
+                .register<String>(R.layout.list_item_white) { injector, bean, position ->
                     injector.text(R.id.textView, bean)
 
                 }
                 .attachTo(recyclerView)
+                .addItemDecoration(LineItemDecoration())
                 .updateData(dataList)
     }
 }

@@ -1,4 +1,4 @@
-package com.jhj.adapterdemo;
+package com.jhj.slimadapter.itemdecoration;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -13,26 +13,39 @@ import java.util.List;
 
 /**
  * GridItemDecoration
- * 设置表格布局时，最好分割先的颜色同recyclerView的样色相同，这样的效果比较好看，因为当你设置spanSizeLookup时，不一定能出现想要的效果
+ * 设置表格布局时，最好分割先的颜色同recyclerView的样色相同，这样的效果比较好看，
+ * 因为当你设置spanSizeLookup时，不一定能出现想要的效果
  * <p>
  * Created by jhj on 18-10-27.
  */
 
-public class ItemDivider extends RecyclerView.ItemDecoration {
+public class GridItemDecoration extends RecyclerView.ItemDecoration {
 
     private Paint paint;
     private SparseIntArray intArray = new SparseIntArray();
     private int lastRawStartIndex = 0;
-    private int dividerWith = 10;
+    private int dividerWith = 1;
+    private boolean isReCalculate = true;
 
-    public ItemDivider() {
+    public GridItemDecoration() {
         initPaint();
-        paint.setColor(0xffff0000);
     }
+
+    public GridItemDecoration setItemDecorationWidth(int itemDecorationWidth) {
+        paint.setStrokeWidth(itemDecorationWidth);
+        return this;
+    }
+
+    public GridItemDecoration setItemDecorationColor(int itemDecorationColor) {
+        paint.setColor(itemDecorationColor);
+        return this;
+    }
+
 
     private void initPaint() {
         if (paint == null) {
             paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paint.setColor(0xffdfdfdf);
             paint.setStyle(Paint.Style.FILL);
             paint.setStrokeWidth(dividerWith);
         }
@@ -41,6 +54,7 @@ public class ItemDivider extends RecyclerView.ItemDecoration {
     @Override
     public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
         super.onDraw(c, parent, state);
+        isReCalculate = true;
         int childCount = parent.getChildCount();
         int recyclerViewUsableWidth = parent.getWidth() - parent.getPaddingRight();
         for (int i = 0; i < childCount; i++) {
@@ -71,10 +85,10 @@ public class ItemDivider extends RecyclerView.ItemDecoration {
     private void drawVertical(Canvas c, RecyclerView parent, int i) {
         View child = parent.getChildAt(i);
         int right = child.getRight() + dividerWith / 2;
-        if (!isLastRaw(i)){
+        if (!isLastRaw(i)) {
             c.drawLine(right, child.getTop(), right, child.getBottom(), paint);
         }
-        if (isLastRaw(i) && parent.getAdapter().getItemCount() > i+1){
+        if (isLastRaw(i) && parent.getAdapter().getItemCount() > i + 1) {
             c.drawLine(right, child.getTop(), right, child.getBottom(), paint);
         }
 
@@ -86,10 +100,11 @@ public class ItemDivider extends RecyclerView.ItemDecoration {
         int itemPosition = parent.getChildViewHolder(view).getAdapterPosition();
         RecyclerView.LayoutManager layoutManager = parent.getLayoutManager();
         if (layoutManager instanceof GridLayoutManager) {
-            if (itemPosition == 0) {
+            if (isReCalculate) {
                 getIndex(parent, 0, 0, 0, intArray);
                 lastRawStartIndex = getLastRawIndex();
             }
+            isReCalculate = false;
             int right = dividerWith;
             int bottom = dividerWith;
             if (isLastColumn(itemPosition)) {
@@ -112,27 +127,34 @@ public class ItemDivider extends RecyclerView.ItemDecoration {
     }
 
 
+    /**
+     * 第一列
+     *
+     * @param index index
+     * @return boolean
+     */
     private boolean isFirstColumn(int index) {
-        if (intArray.get(index) == 0) {
-            return true;
-        }
-        return false;
+        return intArray.get(index) == 0;
     }
 
+    /**
+     * 最后一列
+     *
+     * @param index index
+     * @return boolean
+     */
     private boolean isLastColumn(int index) {
-        if (intArray.get(index + 1) == 0) {
-            return true;
-        }
-        return false;
+        return intArray.get(index + 1) == 0;
     }
 
-
+    /**
+     * 最后一行
+     *
+     * @param index index
+     * @return boolean
+     */
     private boolean isLastRaw(int index) {
-        if (index >= lastRawStartIndex) {
-            return true;
-        } else {
-            return false;
-        }
+        return index >= lastRawStartIndex;
     }
 
     //最后一行第一个item的index
@@ -180,5 +202,4 @@ public class ItemDivider extends RecyclerView.ItemDecoration {
             }
         }
     }
-
 }

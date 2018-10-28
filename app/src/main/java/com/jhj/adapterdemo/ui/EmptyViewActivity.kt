@@ -2,10 +2,11 @@ package com.jhj.adapterdemo.ui
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.GridLayoutManager
 import android.view.LayoutInflater
 import com.jhj.adapterdemo.R
 import com.jhj.slimadapter.SlimAdapter
+import com.jhj.slimadapter.itemdecoration.GridItemDecoration
 import kotlinx.android.synthetic.main.activity_recyclerview.*
 import kotlinx.android.synthetic.main.layout_empty_view.view.*
 import org.jetbrains.anko.sdk25.coroutines.onClick
@@ -21,12 +22,12 @@ class EmptyViewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recyclerview)
         val view = LayoutInflater.from(this).inflate(R.layout.layout_empty_view, null, false);
-        val adapter = SlimAdapter.creator(LinearLayoutManager(this))
-                .register<String>(R.layout.list_item_string) { injector, bean, position ->
+        val adapter = SlimAdapter.creator(GridLayoutManager(this, 3))
+                .register<String>(R.layout.list_item_white) { injector, bean, position ->
                     injector.text(R.id.textView, bean)
-
                 }
                 .attachTo(recyclerView)
+                .addItemDecoration(GridItemDecoration())
                 .setEmptyView(this, R.layout.layout_empty_view) { adapter, v ->
                     v.tv_load.onClick {
                         adapter.updateData(dataList)
