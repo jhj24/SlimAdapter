@@ -10,6 +10,6 @@ import com.jhj.slimadapter.BaseAdapter;
  * Created by jhj on 18-10-11.
  */
 
-public interface OnCustomLayoutListener {
-    void onLayout(BaseAdapter adapter, View view);
+public interface OnCustomLayoutListener<T extends BaseAdapter> {
+    void onLayout(T adapter, View view);
 }

@@ -35,7 +35,7 @@ import java.util.Map;
  * Created by jhj on 18-10-25.
  */
 
-public abstract class BaseAdapter<T, Adapter extends BaseAdapter<T, Adapter>> extends RecyclerView.Adapter<SlimViewHolder> {
+public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends RecyclerView.Adapter<SlimViewHolder> {
 
 
     private static final int HEADER_VIEW_TYPE = -0x00100000;
@@ -50,7 +50,7 @@ public abstract class BaseAdapter<T, Adapter extends BaseAdapter<T, Adapter>> ex
     private Map<Type, ItemViewDelegate> itemViewMap = new HashMap<>();
     private SparseArray<ItemViewDelegate> multiViewMap = new SparseArray<>();
 
-    private List<T> dataList;
+    private List dataList;
     private RecyclerView recyclerView;
 
 
@@ -62,11 +62,11 @@ public abstract class BaseAdapter<T, Adapter extends BaseAdapter<T, Adapter>> ex
 
     private OnItemClickListener onItemClickListener;
     private OnItemLongClickListener onItemLongClickListener;
-    private OnLoadMoreListener onLoadMoreListener;
+    private OnLoadMoreListener<Adapter> onLoadMoreListener;
     private boolean headerWholeLine = true;
     private boolean footerWholeLine = true;
 
-    public List<T> getDataList() {
+    public List getDataList() {
         return dataList;
     }
 
@@ -142,7 +142,7 @@ public abstract class BaseAdapter<T, Adapter extends BaseAdapter<T, Adapter>> ex
     }
 
     @SuppressWarnings("unchecked")
-    public Adapter setDataList(List<T> dataList) {
+    public Adapter setDataList(List<?> dataList) {
         this.dataList = dataList;
         if (onLoadMoreListener != null) {
             loadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_LOADING);
@@ -152,7 +152,7 @@ public abstract class BaseAdapter<T, Adapter extends BaseAdapter<T, Adapter>> ex
     }
 
     @SuppressWarnings("unchecked")
-    public Adapter addDataList(List<T> dataList) {
+    public Adapter addDataList(List<?> dataList) {
         int startIndex = this.dataList.size() + getHeaderViewCount();
         this.dataList.addAll(dataList);
         notifyItemRangeInserted(startIndex, dataList.size());
@@ -160,14 +160,14 @@ public abstract class BaseAdapter<T, Adapter extends BaseAdapter<T, Adapter>> ex
     }
 
     @SuppressWarnings("unchecked")
-    public Adapter addDataList(int index, List<T> dataList) {
+    public Adapter addDataList(int index, List<?> dataList) {
         this.dataList.addAll(index, dataList);
         notifyItemRangeInserted(index + getHeaderViewCount(), dataList.size());
         return (Adapter) this;
     }
 
     @SuppressWarnings("unchecked")
-    public Adapter addData(T data) {
+    public Adapter addData(Object data) {
         int startIndex = this.dataList.size() + getHeaderViewCount();
         this.dataList.add(data);
         notifyItemInserted(startIndex);
@@ -175,7 +175,7 @@ public abstract class BaseAdapter<T, Adapter extends BaseAdapter<T, Adapter>> ex
     }
 
     @SuppressWarnings("unchecked")
-    public Adapter addData(int index, T data) {
+    public Adapter addData(int index, Object data) {
         this.dataList.add(index, data);
         notifyItemInserted(index + getHeaderViewCount());
         return (Adapter) this;
@@ -196,9 +196,9 @@ public abstract class BaseAdapter<T, Adapter extends BaseAdapter<T, Adapter>> ex
     // ====== header ======
 
     @SuppressWarnings("unchecked")
-    public Adapter addHeader(Context context, int layoutRes, OnCustomLayoutListener listener) {
+    public Adapter addHeader(Context context, int layoutRes, OnCustomLayoutListener<Adapter> listener) {
         View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
-        listener.onLayout(this, view);
+        listener.onLayout((Adapter) this, view);
         return addHeader(view);
     }
 
@@ -236,10 +236,10 @@ public abstract class BaseAdapter<T, Adapter extends BaseAdapter<T, Adapter>> ex
     }
 
     //====== footer ======
-
-    public Adapter addFooter(Context context, int layoutRes, OnCustomLayoutListener listener) {
+    @SuppressWarnings("unchecked")
+    public Adapter addFooter(Context context, int layoutRes, OnCustomLayoutListener<Adapter> listener) {
         View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
-        listener.onLayout(this, view);
+        listener.onLayout((Adapter) this, view);
         return addFooter(view);
     }
 
@@ -280,7 +280,7 @@ public abstract class BaseAdapter<T, Adapter extends BaseAdapter<T, Adapter>> ex
     //====== load more =========
 
     @SuppressWarnings("unchecked")
-    public Adapter setOnLoadMoreListener(OnLoadMoreListener onLoadMoreListener) {
+    public Adapter setOnLoadMoreListener(OnLoadMoreListener<Adapter> onLoadMoreListener) {
         this.onLoadMoreListener = onLoadMoreListener;
         return (Adapter) this;
     }
@@ -313,9 +313,9 @@ public abstract class BaseAdapter<T, Adapter extends BaseAdapter<T, Adapter>> ex
     //设置Empty　View 时，该View只在header 、footer、dataList的大小都是０时显示
 
     @SuppressWarnings("unchecked")
-    public Adapter setEmptyView(Context context, int layoutRes, OnCustomLayoutListener listener) {
+    public Adapter setEmptyView(Context context, int layoutRes, OnCustomLayoutListener<Adapter> listener) {
         View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
-        listener.onLayout(this, view);
+        listener.onLayout((Adapter) this, view);
         setEmptyView(view);
         return (Adapter) this;
     }
@@ -559,6 +559,7 @@ public abstract class BaseAdapter<T, Adapter extends BaseAdapter<T, Adapter>> ex
     //====== 其他 =======
 
 
+    @SuppressWarnings("unchecked")
     private void autoLoadMore(int position) {
 
         if (!isShowLoadMoreView(position)) {
@@ -579,11 +580,11 @@ public abstract class BaseAdapter<T, Adapter extends BaseAdapter<T, Adapter>> ex
             recyclerView.post(new Runnable() {
                 @Override
                 public void run() {
-                    onLoadMoreListener.onLoadMore(BaseAdapter.this);
+                    onLoadMoreListener.onLoadMore((Adapter) BaseAdapter.this);
                 }
             });
         } else {
-            onLoadMoreListener.onLoadMore(this);
+            onLoadMoreListener.onLoadMore((Adapter) this);
         }
 
     }

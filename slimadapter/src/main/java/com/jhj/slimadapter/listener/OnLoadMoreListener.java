@@ -8,7 +8,7 @@ import com.jhj.slimadapter.BaseAdapter;
  * Created by jhj on 18-10-16.
  */
 
-public interface OnLoadMoreListener {
+public interface OnLoadMoreListener<T extends BaseAdapter<T>> {
 
-    void onLoadMore(BaseAdapter adapter);
+    void onLoadMore(T adapter);
 }

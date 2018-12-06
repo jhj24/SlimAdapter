@@ -23,7 +23,7 @@ class HeaderAndFooterActivity : AppCompatActivity() {
         setContentView(R.layout.activity_recyclerview)
 
 
-        SlimAdapter.creator(LinearLayoutManager(this))
+        val adapter = SlimAdapter.creator(LinearLayoutManager(this))
                 .register<String>(R.layout.list_item_white, object : ItemViewBind<String>() {
                     override fun convert(injector: ViewInjector, bean: String?, position: Int) {
                         injector.text(R.id.textView, bean)
@@ -32,15 +32,18 @@ class HeaderAndFooterActivity : AppCompatActivity() {
                 .attachTo(recyclerView)
                 .addItemDecoration(LineItemDecoration())
                 .setDataList(dataList)
-                .addHeader(this, R.layout.list_item_putple) { adapter, it ->
+                .addHeader(this, R.layout.list_item_putple) { a, it ->
                     it.textView.text = "这是一个标题"
                 }
-                .addFooter(this, R.layout.list_item_putple) { adapter, it ->
+                .addFooter(this, R.layout.list_item_putple) { a, it ->
+
                     it.textView.text = "这是一个结尾"
                 }
 
 
     }
+
+
 
 
 }

@@ -39,15 +39,15 @@ class LoadMoreActivity : AppCompatActivity() {
                 .addItemDecoration(LineItemDecoration())
                 .setOnLoadMoreListener {
                     if (isHasData) {
-                        setData(it as SlimAdapter<ApplyBean>, 0)
+                        setData(it, 0)
                     } else {
                         it.loadMoreEnd()
                     }
                 }
-        setData(adapter as SlimAdapter<ApplyBean>, 1)
+        setData(adapter, 1)
     }
 
-    private fun setData(adapter: SlimAdapter<ApplyBean>, i: Int) {
+    private fun setData(adapter: SlimAdapter, i: Int) {
         HttpCall.post(HttpConfig.a)
                 .addParam("memberId", "754")
                 .addParam("pageSize", pageSize.toString())
