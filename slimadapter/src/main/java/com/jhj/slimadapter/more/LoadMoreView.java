@@ -8,12 +8,11 @@ import com.jhj.slimadapter.holder.SlimViewHolder;
 
 public abstract class LoadMoreView {
 
-    public static final int STATUS_DEFAULT = 1;
-    public static final int STATUS_LOADING = 2;
-    public static final int STATUS_FAIL = 3;
-    public static final int STATUS_END = 4;
+    public static final int STATUS_LOADING = 1;
+    public static final int STATUS_FAIL = 2;
+    public static final int STATUS_END = 3;
 
-    private int mLoadMoreStatus = STATUS_DEFAULT;
+    private int mLoadMoreStatus = STATUS_LOADING;
 
     public void setLoadMoreStatus(int loadMoreStatus) {
         this.mLoadMoreStatus = loadMoreStatus;
@@ -39,11 +38,6 @@ public abstract class LoadMoreView {
                 visibleLoading(holder, false);
                 visibleLoadFail(holder, false);
                 visibleLoadEnd(holder, true);
-                break;
-            case STATUS_DEFAULT:
-                visibleLoading(holder, false);
-                visibleLoadFail(holder, false);
-                visibleLoadEnd(holder, false);
                 break;
         }
     }

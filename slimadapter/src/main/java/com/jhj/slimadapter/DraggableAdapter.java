@@ -13,7 +13,7 @@ import com.jhj.slimadapter.listener.OnItemSwipeListener;
  * Created by jhj on 18-10-23.
  */
 
-public class DraggableAdapter extends BaseAdapter<DraggableAdapter> {
+public class DraggableAdapter<T> extends BaseAdapter<T, DraggableAdapter<T>> {
 
     private boolean itemDragEnabled = false;
     private boolean itemSwipeEnabled = false;

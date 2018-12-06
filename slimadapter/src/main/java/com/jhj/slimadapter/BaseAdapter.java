@@ -12,7 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
-import com.jhj.slimadapter.callback.ItemViewCallback;
+import com.jhj.slimadapter.callback.ItemViewBind;
 import com.jhj.slimadapter.callback.ItemViewDelegate;
 import com.jhj.slimadapter.holder.SlimViewHolder;
 import com.jhj.slimadapter.holder.ViewInjector;
@@ -35,7 +35,7 @@ import java.util.Map;
  * Created by jhj on 18-10-25.
  */
 
-public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView.Adapter<SlimViewHolder> {
+public abstract class BaseAdapter<T, Adapter extends BaseAdapter<T, Adapter>> extends RecyclerView.Adapter<SlimViewHolder> {
 
 
     private static final int HEADER_VIEW_TYPE = -0x00100000;
@@ -50,7 +50,7 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
     private Map<Type, ItemViewDelegate> itemViewMap = new HashMap<>();
     private SparseArray<ItemViewDelegate> multiViewMap = new SparseArray<>();
 
-    private List<?> dataList;
+    private List<T> dataList;
     private RecyclerView recyclerView;
 
 
@@ -63,11 +63,10 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
     private OnItemClickListener onItemClickListener;
     private OnItemLongClickListener onItemLongClickListener;
     private OnLoadMoreListener onLoadMoreListener;
-    private boolean isLoading = false;
     private boolean headerWholeLine = true;
     private boolean footerWholeLine = true;
 
-    public List<?> getDataList() {
+    public List<T> getDataList() {
         return dataList;
     }
 
@@ -79,8 +78,8 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
     }
 
     @SuppressWarnings("unchecked")
-    public <D> T register(final int layoutRes, final ItemViewCallback<D> callback) {
-        Type type = getDataActualType(callback);
+    public <D> Adapter register(final int layoutRes, final ItemViewBind<D> bind) {
+        Type type = getDataActualType(bind);
         if (type == null) {
             throw new IllegalArgumentException();
         }
@@ -97,15 +96,15 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
 
             @Override
             public void injector(@NonNull ViewInjector injector, D data, int position) {
-                callback.convert(injector, data, position);
+                bind.convert(injector, data, position);
             }
         });
 
-        return (T) this;
+        return (Adapter) this;
     }
 
     @SuppressWarnings("unchecked")
-    public <D extends MultiItemTypeModel> T register(final int viewType, final int layoutRes, final ItemViewCallback<D> callback) {
+    public <D extends MultiItemTypeModel> Adapter register(final int viewType, final int layoutRes, final ItemViewBind<D> bind) {
         if (multiViewTypeList.contains(viewType)) {
             throw new IllegalArgumentException("please use different viewType");
         }
@@ -118,69 +117,97 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
 
             @Override
             public void injector(@NonNull ViewInjector injector, D data, int position) {
-                callback.convert(injector, data, position);
+                bind.convert(injector, data, position);
             }
         });
 
-        return (T) this;
+        return (Adapter) this;
     }
 
-
     @SuppressWarnings("unchecked")
-    public T attachTo(final RecyclerView recyclerView) {
+    public Adapter attachTo(final RecyclerView recyclerView) {
         this.recyclerView = recyclerView;
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(this);
-        return (T) this;
+        return (Adapter) this;
     }
 
     @SuppressWarnings("unchecked")
-    public T addItemDecoration(RecyclerView.ItemDecoration itemDecoration) {
+    public Adapter addItemDecoration(RecyclerView.ItemDecoration itemDecoration) {
         if (recyclerView == null) {
             throw new NullPointerException("RecyclerView is null,Please use this method after attachTo(recyclerView)");
         }
         recyclerView.addItemDecoration(itemDecoration);
-        return (T) this;
+        return (Adapter) this;
     }
 
     @SuppressWarnings("unchecked")
-    public T updateData(List<?> dataList) {
+    public Adapter setDataList(List<T> dataList) {
         this.dataList = dataList;
         if (onLoadMoreListener != null) {
-            isLoading = false;
-            loadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_DEFAULT);
+            loadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_LOADING);
         }
         notifyDataSetChanged();
-        return (T) this;
+        return (Adapter) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Adapter addDataList(List<T> dataList) {
+        int startIndex = this.dataList.size() + getHeaderViewCount();
+        this.dataList.addAll(dataList);
+        notifyItemRangeInserted(startIndex, dataList.size());
+        return (Adapter) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Adapter addDataList(int index, List<T> dataList) {
+        this.dataList.addAll(index, dataList);
+        notifyItemRangeInserted(index + getHeaderViewCount(), dataList.size());
+        return (Adapter) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Adapter addData(T data) {
+        int startIndex = this.dataList.size() + getHeaderViewCount();
+        this.dataList.add(data);
+        notifyItemInserted(startIndex);
+        return (Adapter) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Adapter addData(int index, T data) {
+        this.dataList.add(index, data);
+        notifyItemInserted(index + getHeaderViewCount());
+        return (Adapter) this;
     }
 
 
     @SuppressWarnings("unchecked")
-    public T remove(int index) {
+    public Adapter remove(int index) {
         if (dataList == null) {
-            throw new NullPointerException("dataList is null,Please use this method after updateData(ArrayList<?>)");
+            throw new NullPointerException("dataList is null,Please use this method after setDataList(ArrayList<?>)");
         }
         this.dataList.remove(index);
         notifyItemChanged(index + headerItemViewList.size());
-        return (T) this;
+        return (Adapter) this;
     }
 
 
     // ====== header ======
 
     @SuppressWarnings("unchecked")
-    public T addHeader(Context context, int layoutRes, OnCustomLayoutListener listener) {
+    public Adapter addHeader(Context context, int layoutRes, OnCustomLayoutListener listener) {
         View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
         listener.onLayout(this, view);
         return addHeader(view);
     }
 
-    public T addHeader(Context context, int layoutRes) {
+    public Adapter addHeader(Context context, int layoutRes) {
         return addHeader(LayoutInflater.from(context).inflate(layoutRes, null, false));
     }
 
     @SuppressWarnings("unchecked")
-    public T addHeader(View view) {
+    public Adapter addHeader(View view) {
         ViewGroup.LayoutParams params;
         if (layoutManager instanceof LinearLayoutManager) {
             if (((LinearLayoutManager) layoutManager).getOrientation() == LinearLayout.VERTICAL) {
@@ -192,37 +219,37 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
         }
         headerItemViewList.add(view);
         notifyDataSetChanged();
-        return (T) this;
+        return (Adapter) this;
     }
 
     @SuppressWarnings("unchecked")
-    public T removeHeader(int index) {
+    public Adapter removeHeader(int index) {
         this.headerItemViewList.remove(index);
         notifyItemChanged(index);
-        return (T) this;
+        return (Adapter) this;
     }
 
     @SuppressWarnings("unchecked")
-    public T setHeaderWholeLine(boolean headerWholeLine) {
+    public Adapter setHeaderWholeLine(boolean headerWholeLine) {
         this.headerWholeLine = headerWholeLine;
-        return (T) this;
+        return (Adapter) this;
     }
 
     //====== footer ======
 
-    public T addFooter(Context context, int layoutRes, OnCustomLayoutListener listener) {
+    public Adapter addFooter(Context context, int layoutRes, OnCustomLayoutListener listener) {
         View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
         listener.onLayout(this, view);
         return addFooter(view);
     }
 
 
-    public T addFooter(Context context, int layoutRes) {
+    public Adapter addFooter(Context context, int layoutRes) {
         return addFooter(LayoutInflater.from(context).inflate(layoutRes, null, false));
     }
 
     @SuppressWarnings("unchecked")
-    public T addFooter(View view) {
+    public Adapter addFooter(View view) {
         ViewGroup.LayoutParams params;
         if (layoutManager instanceof LinearLayoutManager) {
             if (((LinearLayoutManager) layoutManager).getOrientation() == LinearLayout.VERTICAL) {
@@ -234,42 +261,40 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
         }
         footerItemViewList.add(view);
         notifyDataSetChanged();
-        return (T) this;
+        return (Adapter) this;
     }
 
     @SuppressWarnings("unchecked")
-    public T removeFooter(int index) {
+    public Adapter removeFooter(int index) {
         this.headerItemViewList.remove(index);
         notifyItemChanged(index + headerItemViewList.size() + getDataListCount());
-        return (T) this;
+        return (Adapter) this;
     }
 
     @SuppressWarnings("unchecked")
-    public T setFooterWholeLine(boolean footerWholeLine) {
+    public Adapter setFooterWholeLine(boolean footerWholeLine) {
         this.footerWholeLine = footerWholeLine;
-        return (T) this;
+        return (Adapter) this;
     }
 
     //====== load more =========
 
     @SuppressWarnings("unchecked")
-    public T setOnLoadMoreListener(OnLoadMoreListener onLoadMoreListener) {
+    public Adapter setOnLoadMoreListener(OnLoadMoreListener onLoadMoreListener) {
         this.onLoadMoreListener = onLoadMoreListener;
-        isLoading = false;
-        return (T) this;
+        return (Adapter) this;
     }
 
     @SuppressWarnings("unchecked")
-    public T setLoadMoreView(LoadMoreView loadingView) {
+    public Adapter setLoadMoreView(LoadMoreView loadingView) {
         this.loadMoreView = loadingView;
-        return (T) this;
+        return (Adapter) this;
     }
 
     public void loadMoreEnd() {
         if (onLoadMoreListener == null || getLoadMoreViewPosition() == 0) {
             return;
         }
-        isLoading = false;
         loadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_END);
         notifyItemChanged(getLoadMoreViewPosition());
     }
@@ -279,7 +304,6 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
         if (onLoadMoreListener == null || getLoadMoreViewPosition() == 0) {
             return;
         }
-        isLoading = false;
         loadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_FAIL);
         notifyItemChanged(getLoadMoreViewPosition());
     }
@@ -289,40 +313,40 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
     //设置Empty　View 时，该View只在header 、footer、dataList的大小都是０时显示
 
     @SuppressWarnings("unchecked")
-    public T setEmptyView(Context context, int layoutRes, OnCustomLayoutListener listener) {
+    public Adapter setEmptyView(Context context, int layoutRes, OnCustomLayoutListener listener) {
         View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
         listener.onLayout(this, view);
         setEmptyView(view);
-        return (T) this;
+        return (Adapter) this;
     }
 
     @SuppressWarnings("unchecked")
-    public T setEmptyView(Context context, int layoutRes) {
+    public Adapter setEmptyView(Context context, int layoutRes) {
         View view = LayoutInflater.from(context).inflate(layoutRes, null, false);
         setEmptyView(view);
-        return (T) this;
+        return (Adapter) this;
     }
 
     @SuppressWarnings("unchecked")
-    public T setEmptyView(View emptyView) {
+    public Adapter setEmptyView(View emptyView) {
         ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         emptyView.setLayoutParams(params);
         emptyItemView = emptyView;
         notifyDataSetChanged();
-        return (T) this;
+        return (Adapter) this;
     }
 
     // ======= listener =======
     @SuppressWarnings("unchecked")
-    public T setOnItemClickListener(OnItemClickListener listener) {
+    public Adapter setOnItemClickListener(OnItemClickListener listener) {
         this.onItemClickListener = listener;
-        return (T) this;
+        return (Adapter) this;
     }
 
     @SuppressWarnings("unchecked")
-    public T setOnItemLongClickListener(OnItemLongClickListener listener) {
+    public Adapter setOnItemLongClickListener(OnItemLongClickListener listener) {
         this.onItemLongClickListener = listener;
-        return (T) this;
+        return (Adapter) this;
     }
 
 
@@ -544,23 +568,22 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
         if (position < getItemCount() - 1) {
             return;
         }
-        if (loadMoreView.getLoadMoreStatus() != LoadMoreView.STATUS_DEFAULT) {
+
+        if (loadMoreView.getLoadMoreStatus() != LoadMoreView.STATUS_LOADING) {
             return;
         }
 
         loadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_LOADING);
-        if (!isLoading) {
-            isLoading = true;
-            if (recyclerView != null) {
-                recyclerView.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        onLoadMoreListener.onLoadMore(BaseAdapter.this);
-                    }
-                });
-            } else {
-                onLoadMoreListener.onLoadMore(this);
-            }
+
+        if (recyclerView != null) {
+            recyclerView.post(new Runnable() {
+                @Override
+                public void run() {
+                    onLoadMoreListener.onLoadMore(BaseAdapter.this);
+                }
+            });
+        } else {
+            onLoadMoreListener.onLoadMore(this);
         }
 
     }
@@ -606,18 +629,16 @@ public abstract class BaseAdapter<T extends BaseAdapter<T>> extends RecyclerView
     }
 
 
-    private <D> Type getDataActualType(ItemViewCallback<D> callback) {
-        Type[] interfaces = callback.getClass().getGenericInterfaces();
-        for (Type type : interfaces) {
-            if (type instanceof ParameterizedType) {
-                if (((ParameterizedType) type).getRawType().equals(ItemViewCallback.class)) {
-                    Type actualType = ((ParameterizedType) type).getActualTypeArguments()[0];
-                    if (actualType instanceof Class) {
-                        return actualType;
-                    } else {
-                        throw new IllegalArgumentException("The generic type argument of Slim is NOT support " +
-                                "Generic Parameterized Type now, Please using a WRAPPER class install of it directly.");
-                    }
+    private <D> Type getDataActualType(ItemViewBind<D> bind) {
+        Type type = bind.getClass().getGenericSuperclass();
+        if (type instanceof ParameterizedType) {
+            if (((ParameterizedType) type).getRawType().equals(ItemViewBind.class)) {
+                Type actualType = ((ParameterizedType) type).getActualTypeArguments()[0];
+                if (actualType instanceof Class) {
+                    return actualType;
+                } else {
+                    throw new IllegalArgumentException("The generic type argument of Slim is NOT support " +
+                            "Generic Parameterized Type now, Please using a WRAPPER class install of it directly.");
                 }
             }
         }

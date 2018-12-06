@@ -7,6 +7,8 @@ import android.support.v7.widget.RecyclerView
 import android.widget.TextView
 import com.jhj.adapterdemo.R
 import com.jhj.slimadapter.DraggableAdapter
+import com.jhj.slimadapter.callback.ItemViewBind
+import com.jhj.slimadapter.holder.ViewInjector
 import com.jhj.slimadapter.itemdecoration.LineItemDecoration
 import com.jhj.slimadapter.listener.OnItemDragListener
 import kotlinx.android.synthetic.main.activity_recyclerview.*
@@ -28,9 +30,11 @@ class DragActivity : AppCompatActivity() {
         textView.text = "222"
 
         DraggableAdapter.creator(LinearLayoutManager(this))
-                .register<String>(R.layout.list_item_putple) { injector, bean, position ->
-                    injector.text(R.id.textView, bean.toString())
-                }
+                .register<String>(R.layout.list_item_putple, object : ItemViewBind<String>() {
+                    override fun convert(injector: ViewInjector, bean: String?, position: Int) {
+                        injector.text(R.id.textView, bean.toString())
+                    }
+                })
                 .setOnItemClickListener { recyclerView, view, position ->
                     toast(position.toString() + "——>" + dataList[position])
                 }
@@ -40,7 +44,6 @@ class DragActivity : AppCompatActivity() {
                 }
                 .attachTo(recyclerView)
                 .addItemDecoration(LineItemDecoration())
-                .updateData(dataList)
                 .setItemTouchHelper()
                 .setDragItem(true)
                 .setOnItemDragListener(object : OnItemDragListener {
@@ -60,6 +63,7 @@ class DragActivity : AppCompatActivity() {
                 })
                 .setSwipeItem(true)
                 .setSwipeFadeOutAnim(true)
+                .setDataList(dataList)
 
 
     }

@@ -9,6 +9,8 @@ import com.jhj.adapterdemo.net.DialogCallback
 import com.jhj.adapterdemo.net.HttpConfig
 import com.jhj.httplibrary.httpcall.HttpCall
 import com.jhj.slimadapter.SlimAdapter
+import com.jhj.slimadapter.callback.ItemViewBind
+import com.jhj.slimadapter.holder.ViewInjector
 import com.jhj.slimadapter.itemdecoration.LineItemDecoration
 import kotlinx.android.synthetic.main.activity_recyclerview.*
 import java.util.*
@@ -21,7 +23,6 @@ class LoadMoreActivity : AppCompatActivity() {
     val pageSize = 14;
     var pageNo = 0;
     var isHasData = false;
-    val dataList = arrayListOf<ApplyBean>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,23 +30,24 @@ class LoadMoreActivity : AppCompatActivity() {
 
 
         val adapter = SlimAdapter.creator(LinearLayoutManager(this))
-                .register<ApplyBean>(R.layout.list_item_white) { injector, bean, position ->
-                    injector.text(R.id.textView, bean.leaveTypeName)
-
-                }
+                .register<ApplyBean>(R.layout.list_item_white, object : ItemViewBind<ApplyBean>() {
+                    override fun convert(injector: ViewInjector, bean: ApplyBean?, position: Int) {
+                        injector.text(R.id.textView, bean?.leaveTypeName)
+                    }
+                })
                 .attachTo(recyclerView)
                 .addItemDecoration(LineItemDecoration())
                 .setOnLoadMoreListener {
                     if (isHasData) {
-                        setData(it as SlimAdapter)
+                        setData(it as SlimAdapter<ApplyBean>, 0)
                     } else {
                         it.loadMoreEnd()
                     }
                 }
-        setData(adapter)
+        setData(adapter as SlimAdapter<ApplyBean>, 1)
     }
 
-    private fun setData(adapter: SlimAdapter) {
+    private fun setData(adapter: SlimAdapter<ApplyBean>, i: Int) {
         HttpCall.post(HttpConfig.a)
                 .addParam("memberId", "754")
                 .addParam("pageSize", pageSize.toString())
@@ -55,8 +57,12 @@ class LoadMoreActivity : AppCompatActivity() {
                         super.onSuccess(data)
                         isHasData = data?.size ?: 0 >= pageSize
                         pageNo++
-                        dataList.addAll(data as ArrayList<ApplyBean>)
-                        adapter.updateData(dataList)
+                        if (i == 0) {
+                            adapter.addDataList(data)
+                        } else {
+                            adapter.setDataList(data)
+                        }
+
                     }
                 })
     }

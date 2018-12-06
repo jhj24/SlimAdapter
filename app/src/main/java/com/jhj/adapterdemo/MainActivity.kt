@@ -6,6 +6,8 @@ import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
 import com.jhj.adapterdemo.ui.*
 import com.jhj.slimadapter.SlimAdapter
+import com.jhj.slimadapter.callback.ItemViewBind
+import com.jhj.slimadapter.holder.ViewInjector
 import com.jhj.slimadapter.itemdecoration.LineItemDecoration
 import kotlinx.android.synthetic.main.activity_recyclerview.*
 import org.jetbrains.anko.startActivity
@@ -37,12 +39,14 @@ class MainActivity : AppCompatActivity() {
                 "加载更多", "没有数据的布局", "拖拽和滑动删除", "滑动菜单")
 
         SlimAdapter.creator(LinearLayoutManager(this))
-                .register<String>(R.layout.list_item_white) { injector, bean, position ->
-                    injector.text(R.id.textView, bean)
-                }
+                .register<String>(R.layout.list_item_white, object : ItemViewBind<String>() {
+                    override fun convert(injector: ViewInjector, bean: String?, position: Int) {
+                        injector.text(R.id.textView, bean)
+                    }
+                })
                 .attachTo(recyclerView)
                 .addItemDecoration(LineItemDecoration())
-                .updateData(list)
+                .setDataList(list)
                 .setOnItemClickListener { recyclerView, view, position ->
                     when (position) {
                         0 -> startActivity<CommonActivity>()

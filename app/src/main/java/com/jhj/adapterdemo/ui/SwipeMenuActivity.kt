@@ -5,6 +5,8 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import com.jhj.adapterdemo.R
 import com.jhj.slimadapter.DraggableAdapter
+import com.jhj.slimadapter.callback.ItemViewBind
+import com.jhj.slimadapter.holder.ViewInjector
 import com.jhj.slimadapter.itemdecoration.LineItemDecoration
 import com.jhj.slimadapter.widget.SwipeMenuLayout
 import kotlinx.android.synthetic.main.activity_recyclerview.*
@@ -24,22 +26,24 @@ class SwipeMenuActivity : AppCompatActivity() {
         setContentView(R.layout.activity_recyclerview)
 
         DraggableAdapter.creator(LinearLayoutManager(this))
-                .register<String>(R.layout.list_item_swipe_menu) { injector, bean, position ->
-                    val a = injector.getView<SwipeMenuLayout>(R.id.swipeMenuLayout)
-                    injector.text(R.id.tv_content, bean)
-                            .clicked(R.id.tv_delete) {
-                                toast("删除")
-                                a.quickClose()
-                            }
-                            .clicked(R.id.tv_top) {
-                                toast("置顶")
-                                a.quickClose()
-                            }
+                .register<String>(R.layout.list_item_swipe_menu, object : ItemViewBind<String>() {
+                    override fun convert(injector: ViewInjector, bean: String?, position: Int) {
+                        val a = injector.getView<SwipeMenuLayout>(R.id.swipeMenuLayout)
+                        injector.text(R.id.tv_content, bean)
+                                .clicked(R.id.tv_delete) {
+                                    toast("删除")
+                                    a.quickClose()
+                                }
+                                .clicked(R.id.tv_top) {
+                                    toast("置顶")
+                                    a.quickClose()
+                                }
+                    }
 
-                }
+                })
                 .attachTo(recyclerView)
                 .addItemDecoration(LineItemDecoration())
-                .updateData(dataList)
+                .setDataList(dataList)
 
     }
 

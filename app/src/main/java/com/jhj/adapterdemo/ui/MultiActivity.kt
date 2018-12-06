@@ -6,6 +6,8 @@ import android.support.v7.widget.LinearLayoutManager
 import com.jhj.adapterdemo.R
 import com.jhj.adapterdemo.bean.MultiBean
 import com.jhj.slimadapter.SlimAdapter
+import com.jhj.slimadapter.callback.ItemViewBind
+import com.jhj.slimadapter.holder.ViewInjector
 import com.jhj.slimadapter.itemdecoration.LineItemDecoration
 import kotlinx.android.synthetic.main.activity_recyclerview.*
 
@@ -14,7 +16,7 @@ import kotlinx.android.synthetic.main.activity_recyclerview.*
  */
 class MultiActivity : AppCompatActivity() {
 
-    val dataList = arrayListOf<MultiBean>(MultiBean(0), MultiBean(1), MultiBean(2), MultiBean(3),
+    val dataList = arrayListOf(MultiBean(0), MultiBean(1), MultiBean(2), MultiBean(3),
             MultiBean(4), MultiBean(5), MultiBean(6), MultiBean(7), MultiBean(8), MultiBean(9))
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,16 +24,20 @@ class MultiActivity : AppCompatActivity() {
         setContentView(R.layout.activity_recyclerview)
 
         SlimAdapter.creator(LinearLayoutManager(this))
-                .register<MultiBean>(1, R.layout.list_item_white) { injector, bean, position ->
-                    injector.text(R.id.textView, bean.num.toString())
+                .register<MultiBean>(1, R.layout.list_item_white, object : ItemViewBind<MultiBean>() {
+                    override fun convert(injector: ViewInjector, bean: MultiBean?, position: Int) {
+                        injector.text(R.id.textView, bean?.num.toString())
+                    }
 
-                }
-                .register<MultiBean>(0, R.layout.list_item_putple) { injector, bean, position ->
-                    injector.text(R.id.textView, bean.num.toString())
+                })
+                .register<MultiBean>(0, R.layout.list_item_putple, object : ItemViewBind<MultiBean>() {
+                    override fun convert(injector: ViewInjector, bean: MultiBean?, position: Int) {
+                        injector.text(R.id.textView, bean?.num.toString())
+                    }
 
-                }
+                })
                 .attachTo(recyclerView)
                 .addItemDecoration(LineItemDecoration().setDividerColor(0xffff0000.toInt()))
-                .updateData(dataList)
+                .setDataList(dataList)
     }
 }
