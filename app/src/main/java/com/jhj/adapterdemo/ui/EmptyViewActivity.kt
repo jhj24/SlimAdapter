@@ -11,7 +11,7 @@ import com.jhj.slimadapter.holder.ViewInjector
 import com.jhj.slimadapter.itemdecoration.GridItemDecoration
 import kotlinx.android.synthetic.main.activity_recyclerview.*
 import kotlinx.android.synthetic.main.layout_empty_view.view.*
-import org.jetbrains.anko.sdk25.coroutines.onClick
+import org.jetbrains.anko.sdk27.coroutines.onClick
 
 /**
  * Created by jhj on 18-10-22.

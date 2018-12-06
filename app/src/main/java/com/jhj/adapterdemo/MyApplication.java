@@ -2,7 +2,8 @@ package com.jhj.adapterdemo;
 
 import android.app.Application;
 
-import com.jhj.httplibrary.httpcall.HttpCall;
+import com.jhj.httplibrary.HttpCall;
+
 
 /**
  * Created by jhj on 18-10-22.

@@ -1,20 +1,10 @@
 package com.jhj.adapterdemo.net;
 
-import com.jhj.httplibrary.result.Result;
-
-import org.jetbrains.annotations.NotNull;
-
 /**
  * Created by jhj on 18-10-22.
  */
 
-public class DataResult<T> extends Result<DataResult<T>> {
-    @NotNull
-    @Override
-    public DataResult<T> getClazz() {
-        return this;
-    }
-
+public class DataResult<T> {
     private T data;
     private String msg;
     private int result;

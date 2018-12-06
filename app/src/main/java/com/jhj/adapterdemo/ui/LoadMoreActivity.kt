@@ -5,15 +5,15 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import com.jhj.adapterdemo.R
 import com.jhj.adapterdemo.bean.ApplyBean
-import com.jhj.adapterdemo.net.DialogCallback
+import com.jhj.adapterdemo.net.DataResult
 import com.jhj.adapterdemo.net.HttpConfig
-import com.jhj.httplibrary.httpcall.HttpCall
+import com.jhj.httplibrary.HttpCall
+import com.jhj.httplibrary.callback.base.BaseHttpCallback
 import com.jhj.slimadapter.SlimAdapter
 import com.jhj.slimadapter.callback.ItemViewBind
 import com.jhj.slimadapter.holder.ViewInjector
 import com.jhj.slimadapter.itemdecoration.LineItemDecoration
 import kotlinx.android.synthetic.main.activity_recyclerview.*
-import java.util.*
 
 /**
  * Created by jhj on 18-10-22.
@@ -52,17 +52,20 @@ class LoadMoreActivity : AppCompatActivity() {
                 .addParam("memberId", "754")
                 .addParam("pageSize", pageSize.toString())
                 .addParam("pageNo", pageNo.toString())
-                .enqueue(object : DialogCallback<List<ApplyBean>>(this, "正在加载数据...") {
-                    override fun onSuccess(data: List<ApplyBean>?) {
-                        super.onSuccess(data)
-                        isHasData = data?.size ?: 0 >= pageSize
+                .enqueue(object : BaseHttpCallback<DataResult<List<ApplyBean>>>() {
+                    override fun onFailure(msg: String, errorCode: Int) {
+                        adapter.loadMoreFail()
+                    }
+
+                    override fun onSuccess(data: DataResult<List<ApplyBean>>?, resultType: ResultType) {
+                        val list = data?.data
+                        isHasData = list?.size ?: 0 >= pageSize
                         pageNo++
                         if (i == 0) {
-                            adapter.addDataList(data)
+                            adapter.addDataList(list)
                         } else {
-                            adapter.setDataList(data)
+                            adapter.setDataList(list)
                         }
-
                     }
                 })
     }
