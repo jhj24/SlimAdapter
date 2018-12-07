@@ -79,7 +79,12 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
 
     @SuppressWarnings("unchecked")
     public <D> Adapter register(final int layoutRes, final ItemViewBind<D> bind) {
-        Type type = getDataActualType(bind);
+        Type type;
+        if (getCustomActualType() == null) {
+            type = getDataActualType(bind);
+        } else {
+            type = getCustomActualType();
+        }
         if (type == null) {
             throw new IllegalArgumentException();
         }
@@ -643,6 +648,15 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
                 }
             }
         }
+        return null;
+    }
+
+    /**
+     * 二次泛型封装会出现错误，可以重写该方法获取实际类型
+     *
+     * @return 泛型的实际类型
+     */
+    public Type getCustomActualType() {
         return null;
     }
 }
