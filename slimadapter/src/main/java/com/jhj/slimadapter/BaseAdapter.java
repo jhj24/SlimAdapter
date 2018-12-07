@@ -1,6 +1,7 @@
 package com.jhj.slimadapter;
 
 import android.content.Context;
+import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -45,6 +46,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
     private static final int BODY_VIEW_TYPE = -0x00500000;
 
     RecyclerView.LayoutManager layoutManager;
+    private Type genericActualType;
     private List<Type> dataViewTypeList = new ArrayList<>();
     private List<Integer> multiViewTypeList = new ArrayList<>();
     private Map<Type, ItemViewDelegate> itemViewMap = new HashMap<>();
@@ -78,12 +80,12 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
     }
 
     @SuppressWarnings("unchecked")
-    public <D> Adapter register(final int layoutRes, final ItemViewBind<D> bind) {
+    public <D> Adapter register(@LayoutRes final int layoutRes, final ItemViewBind<D> bind) {
         Type type;
-        if (getCustomActualType() == null) {
+        if (getGenericActualType() == null) {
             type = getDataActualType(bind);
         } else {
-            type = getCustomActualType();
+            type = getGenericActualType();
         }
         if (type == null) {
             throw new IllegalArgumentException();
@@ -109,7 +111,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
     }
 
     @SuppressWarnings("unchecked")
-    public <D extends MultiItemTypeModel> Adapter register(final int viewType, final int layoutRes, final ItemViewBind<D> bind) {
+    public <D extends MultiItemTypeModel> Adapter register(final int viewType, @LayoutRes final int layoutRes, final ItemViewBind<D> bind) {
         if (multiViewTypeList.contains(viewType)) {
             throw new IllegalArgumentException("please use different viewType");
         }
@@ -351,6 +353,20 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
     @SuppressWarnings("unchecked")
     public Adapter setOnItemLongClickListener(OnItemLongClickListener listener) {
         this.onItemLongClickListener = listener;
+        return (Adapter) this;
+    }
+
+    private Type getGenericActualType() {
+        return genericActualType;
+    }
+
+    /**
+     * 二次泛型封装会出现错误，可以通过该方法获取实际类型
+     *
+     * @return 泛型的实际类型
+     */
+    public Adapter setGenericActualType(Type genericActualType) {
+        this.genericActualType = genericActualType;
         return (Adapter) this;
     }
 
@@ -651,12 +667,4 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
         return null;
     }
 
-    /**
-     * 二次泛型封装会出现错误，可以重写该方法获取实际类型
-     *
-     * @return 泛型的实际类型
-     */
-    public Type getCustomActualType() {
-        return null;
-    }
 }

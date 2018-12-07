@@ -1,6 +1,6 @@
 package com.jhj.slimadapter.callback;
 
-import android.support.annotation.IdRes;
+import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 
 import com.jhj.slimadapter.holder.ViewInjector;
@@ -13,9 +13,9 @@ import com.jhj.slimadapter.holder.ViewInjector;
 
 public interface ItemViewDelegate<T> {
 
-    @IdRes
+    @LayoutRes
     int getItemViewLayoutId();
 
-    void injector(@NonNull ViewInjector injector, T t, int position);
+    void injector(@NonNull ViewInjector injector, T t, @NonNull int position);
 
 }
