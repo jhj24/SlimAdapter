@@ -365,6 +365,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
      *
      * @return 泛型的实际类型
      */
+    @SuppressWarnings("unchecked")
     public Adapter setGenericActualType(Type genericActualType) {
         this.genericActualType = genericActualType;
         return (Adapter) this;
