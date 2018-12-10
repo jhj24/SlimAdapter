@@ -443,10 +443,10 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
             }
         });
 
-         /*
-          * 当同时设置了recyclerView 点击和长按事件时，记得要设置长按返回true对事件进行拦截，
-          * 否则recyclerView执行完长按事件后会执行点击事件。
-          */
+        /*
+         * 当同时设置了recyclerView 点击和长按事件时，记得要设置长按返回true对事件进行拦截，
+         * 否则recyclerView执行完长按事件后会执行点击事件。
+         */
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -652,15 +652,17 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
 
 
     private <D> Type getDataActualType(ItemViewBind<D> bind) {
-        Type type = bind.getClass().getGenericSuperclass();
-        if (type instanceof ParameterizedType) {
-            if (((ParameterizedType) type).getRawType().equals(ItemViewBind.class)) {
-                Type actualType = ((ParameterizedType) type).getActualTypeArguments()[0];
-                if (actualType instanceof Class) {
-                    return actualType;
-                } else {
-                    throw new IllegalArgumentException("The generic type argument of Slim is NOT support " +
-                            "Generic Parameterized Type now, Please using a WRAPPER class install of it directly.");
+        Type[] interfaces = bind.getClass().getGenericInterfaces();
+        for (Type type : interfaces) {
+            if (type instanceof ParameterizedType) {
+                if (((ParameterizedType) type).getRawType().equals(ItemViewBind.class)) {
+                    Type actualType = ((ParameterizedType) type).getActualTypeArguments()[0];
+                    if (actualType instanceof Class) {
+                        return actualType;
+                    } else {
+                        throw new IllegalArgumentException("The generic type argument of Slim is NOT support " +
+                                "Generic Parameterized Type now, Please using a WRAPPER class install of it directly.");
+                    }
                 }
             }
         }

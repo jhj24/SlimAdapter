@@ -24,18 +24,12 @@ class MultiActivity : AppCompatActivity() {
         setContentView(R.layout.activity_recyclerview)
 
         SlimAdapter.creator(LinearLayoutManager(this))
-                .register<MultiBean>(1, R.layout.list_item_white, object : ItemViewBind<MultiBean>() {
-                    override fun convert(injector: ViewInjector, bean: MultiBean?, position: Int) {
-                        injector.text(R.id.textView, bean?.num.toString())
-                    }
-
-                })
-                .register<MultiBean>(0, R.layout.list_item_putple, object : ItemViewBind<MultiBean>() {
-                    override fun convert(injector: ViewInjector, bean: MultiBean?, position: Int) {
-                        injector.text(R.id.textView, bean?.num.toString())
-                    }
-
-                })
+                .register<MultiBean>(1, R.layout.list_item_white) { injector, bean, position ->
+                    injector.text(R.id.textView, bean?.num.toString())
+                }
+                .register<MultiBean>(0, R.layout.list_item_putple) { injector, bean, position ->
+                    injector.text(R.id.textView, bean?.num.toString())
+                }
                 .attachTo(recyclerView)
                 .addItemDecoration(LineItemDecoration().setDividerColor(0xffff0000.toInt()))
                 .setDataList(dataList)

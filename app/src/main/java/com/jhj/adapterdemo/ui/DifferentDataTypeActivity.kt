@@ -22,16 +22,12 @@ class DifferentDataTypeActivity : AppCompatActivity() {
         setContentView(R.layout.activity_recyclerview)
 
         SlimAdapter.creator(LinearLayoutManager(this))
-                .register<String>(R.layout.list_item_white, object : ItemViewBind<String>() {
-                    override fun convert(injector: ViewInjector, bean: String?, position: Int) {
-                        injector.text(R.id.textView, "这是String类->$bean")
-                    }
-                })
-                .register<Int>(R.layout.list_item_putple, object : ItemViewBind<Int>() {
-                    override fun convert(injector: ViewInjector, bean: Int?, position: Int) {
-                        injector.text(R.id.textView, "这是Int类->$bean")
-                    }
-                })
+                .register<String>(R.layout.list_item_white) { injector, bean, position ->
+                    injector.text(R.id.textView, "这是String类->$bean")
+                }
+                .register<Int>(R.layout.list_item_putple) { injector, bean, position ->
+                    injector.text(R.id.textView, "这是Int类->$bean")
+                }
                 .attachTo(recyclerView)
                 .addItemDecoration(LineItemDecoration().setDividerColor(0xffff0000.toInt()))
                 .setDataList(dataList)

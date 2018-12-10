@@ -10,8 +10,8 @@ import com.jhj.slimadapter.holder.ViewInjector;
  * Created by jhj on 18-10-13.
  */
 
-public abstract class ItemViewBind<D> {
+public interface  ItemViewBind<D> {
 
-    public abstract void convert(@NonNull ViewInjector injector, D bean, @NonNull int position);
+     void convert(@NonNull ViewInjector injector, D bean, @NonNull int position);
 
 }

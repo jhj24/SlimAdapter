@@ -11,7 +11,7 @@ import android.support.v7.widget.RecyclerView;
 
 public class SlimAdapter extends BaseAdapter<SlimAdapter> {
 
-    public SlimAdapter(RecyclerView.LayoutManager manager) {
+    private SlimAdapter(RecyclerView.LayoutManager manager) {
         this.layoutManager = manager;
     }
 

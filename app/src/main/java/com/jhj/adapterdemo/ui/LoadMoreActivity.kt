@@ -30,11 +30,9 @@ class LoadMoreActivity : AppCompatActivity() {
 
 
         val adapter = SlimAdapter.creator(LinearLayoutManager(this))
-                .register<ApplyBean>(R.layout.list_item_white, object : ItemViewBind<ApplyBean>() {
-                    override fun convert(injector: ViewInjector, bean: ApplyBean?, position: Int) {
-                        injector.text(R.id.textView, bean?.leaveTypeName)
-                    }
-                })
+                .register<ApplyBean>(R.layout.list_item_white) { injector, bean, position ->
+                    injector.text(R.id.textView, bean?.leaveTypeName)
+                }
                 .attachTo(recyclerView)
                 .addItemDecoration(LineItemDecoration())
                 .setOnLoadMoreListener {
