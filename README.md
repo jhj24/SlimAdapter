@@ -74,5 +74,6 @@ SwipeMenuLayout
 
 侧滑菜单，在RecyclerView的子布局使用该布局时，不能同时设置DraggableAdapter的setSwipeItem(boolean isSwipe)为true,会造成侧滑菜单和侧滑删除冲突，不知道使用哪种方法。
 
-
+### 泛型二次封装
+实际应用中可能对SlimAdapter进行二次封装，但是泛型二次解析会失败。可以通过 setGenericActualType(Type genericActualType)设置泛型的实际类型。
 
