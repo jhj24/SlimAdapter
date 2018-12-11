@@ -16,6 +16,6 @@ public interface ItemViewDelegate<T> {
     @LayoutRes
     int getItemViewLayoutId();
 
-    void injector(@NonNull ViewInjector injector, T t, @NonNull int position);
+    void injector(@NonNull ViewInjector injector,T t, int position);
 
 }

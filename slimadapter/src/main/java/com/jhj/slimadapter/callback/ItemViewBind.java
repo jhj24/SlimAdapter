@@ -12,6 +12,6 @@ import com.jhj.slimadapter.holder.ViewInjector;
 
 public interface  ItemViewBind<D> {
 
-     void convert(@NonNull ViewInjector injector, D bean, @NonNull int position);
+     void convert(@NonNull ViewInjector injector, D bean, int position);
 
 }

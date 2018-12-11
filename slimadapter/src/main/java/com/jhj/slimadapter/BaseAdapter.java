@@ -423,10 +423,14 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
 
             if (data instanceof MultiItemTypeModel) {
                 ItemViewDelegate itemView = multiViewMap.get(((MultiItemTypeModel) data).getItemType());
-                itemView.injector(holder.getViewInjector(), data, position);
+                if (itemView != null){
+                    itemView.injector(holder.getViewInjector(), data, position);
+                }
             } else {
                 ItemViewDelegate itemView = itemViewMap.get(data.getClass());
-                itemView.injector(holder.getViewInjector(), data, position);
+                if (itemView != null){
+                    itemView.injector(holder.getViewInjector(), data, position);
+                }
             }
 
         } else if (isShowLoadMoreView(position)) {
