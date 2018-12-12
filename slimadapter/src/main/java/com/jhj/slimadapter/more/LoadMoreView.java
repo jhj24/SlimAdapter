@@ -61,6 +61,13 @@ public abstract class LoadMoreView {
         }
     }
 
+
+    public void setLoadFailOnClickListener(SlimViewHolder holder, View.OnClickListener listener) {
+        if (getLoadFailViewId() != 0) {
+            holder.getViewInjector().clicked(getLoadFailViewId(), listener);
+        }
+    }
+
     /**
      * load more layout
      *

@@ -59,6 +59,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
     private List<View> headerItemViewList = new ArrayList<>();
     private List<View> footerItemViewList = new ArrayList<>();
     private LoadMoreView loadMoreView = new SimpleLoadMoreView();
+    private SlimViewHolder loadMoreViewHolder;
     private View emptyItemView;
 
 
@@ -315,6 +316,13 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
         notifyItemChanged(getLoadMoreViewPosition());
     }
 
+    public void setLoadMoreFailClickListener(View.OnClickListener listener) {
+        if (onLoadMoreListener == null || getLoadMoreViewPosition() == 0 || loadMoreViewHolder == null) {
+            return;
+        }
+        loadMoreView.setLoadFailOnClickListener(loadMoreViewHolder, listener);
+    }
+
 
     //======empty view =======
     //设置Empty　View 时，该View只在header 、footer、dataList的大小都是０时显示
@@ -384,7 +392,8 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
 
         } else if (isLoadMoreView(viewType)) {//more
             View view = LayoutInflater.from(parent.getContext()).inflate(loadMoreView.getLayoutId(), parent, false);
-            return new SlimViewHolder(view);
+            loadMoreViewHolder = new SlimViewHolder(view);
+            return loadMoreViewHolder;
 
         } else if (isEmptyView(viewType)) {//empty
             return new SlimViewHolder(emptyItemView);
