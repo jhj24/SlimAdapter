@@ -59,7 +59,6 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
     private List<View> headerItemViewList = new ArrayList<>();
     private List<View> footerItemViewList = new ArrayList<>();
     private LoadMoreView loadMoreView = new SimpleLoadMoreView();
-    private SlimViewHolder loadMoreViewHolder;
     private View emptyItemView;
 
 
@@ -390,8 +389,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
 
         } else if (isLoadMoreView(viewType)) {//more
             View view = LayoutInflater.from(parent.getContext()).inflate(loadMoreView.getLayoutId(), parent, false);
-            loadMoreViewHolder = new SlimViewHolder(view);
-            return loadMoreViewHolder;
+            return new SlimViewHolder(view);
 
         } else if (isEmptyView(viewType)) {//empty
             return new SlimViewHolder(emptyItemView);
@@ -421,7 +419,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
 
     @Override
     public void onBindViewHolder(@NonNull SlimViewHolder holder, int position) {
-        autoLoadMore(position);
+
         int bodyPosition = position - headerItemViewList.size();
 
         if (bodyPosition >= 0 && bodyPosition < getDataListCount()) {//body
@@ -441,6 +439,8 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
             }
 
         } else if (isShowLoadMoreView(position)) {
+
+            autoLoadMore(position);
             loadMoreView.convert(holder);
         }
 
@@ -621,6 +621,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
         }
 
     }
+
 
 
     /**
