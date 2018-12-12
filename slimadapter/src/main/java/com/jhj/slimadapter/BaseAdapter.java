@@ -316,7 +316,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
         notifyItemChanged(getLoadMoreViewPosition());
     }
 
-    public void loadMoreFail(View.OnClickListener listener) {
+    public void loadMoreFail(LoadMoreView.OnLoadMoreFailClickClListener listener) {
         loadMoreFail();
         loadMoreView.setLoadFailOnClickListener(listener);
     }

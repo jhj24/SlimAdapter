@@ -53,6 +53,7 @@ class LoadMoreActivity : AppCompatActivity() {
                     override fun onFailure(msg: String, errorCode: Int) {
                         adapter.loadMoreFail {
                             toast("重新加载")
+                            setData(adapter, i)
                         }
                     }
 
