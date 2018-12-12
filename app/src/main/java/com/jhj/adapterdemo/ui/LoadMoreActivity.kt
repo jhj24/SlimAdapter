@@ -10,10 +10,9 @@ import com.jhj.adapterdemo.net.HttpConfig
 import com.jhj.httplibrary.HttpCall
 import com.jhj.httplibrary.callback.base.BaseHttpCallback
 import com.jhj.slimadapter.SlimAdapter
-import com.jhj.slimadapter.callback.ItemViewBind
-import com.jhj.slimadapter.holder.ViewInjector
 import com.jhj.slimadapter.itemdecoration.LineItemDecoration
 import kotlinx.android.synthetic.main.activity_recyclerview.*
+import org.jetbrains.anko.toast
 
 /**
  * Created by jhj on 18-10-22.
@@ -52,7 +51,9 @@ class LoadMoreActivity : AppCompatActivity() {
                 .addParam("pageNo", pageNo.toString())
                 .enqueue(object : BaseHttpCallback<DataResult<List<ApplyBean>>>() {
                     override fun onFailure(msg: String, errorCode: Int) {
-                        adapter.loadMoreFail()
+                        adapter.loadMoreFail {
+                            toast("重新加载")
+                        }
                     }
 
                     override fun onSuccess(data: DataResult<List<ApplyBean>>?, resultType: ResultType) {

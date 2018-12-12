@@ -13,6 +13,7 @@ public abstract class LoadMoreView {
     public static final int STATUS_END = 3;
 
     private int mLoadMoreStatus = STATUS_LOADING;
+    private View.OnClickListener listener;
 
     public void setLoadMoreStatus(int loadMoreStatus) {
         this.mLoadMoreStatus = loadMoreStatus;
@@ -52,6 +53,7 @@ public abstract class LoadMoreView {
     private void visibleLoadFail(SlimViewHolder holder, boolean visible) {
         if (getLoadFailViewId() != 0) {
             holder.getViewInjector().visibility(getLoadFailViewId(), visible ? View.VISIBLE : View.GONE);
+            holder.getViewInjector().clicked(getLoadFailViewId(), listener);
         }
     }
 
@@ -62,10 +64,8 @@ public abstract class LoadMoreView {
     }
 
 
-    public void setLoadFailOnClickListener(SlimViewHolder holder, View.OnClickListener listener) {
-        if (getLoadFailViewId() != 0) {
-            holder.getViewInjector().clicked(getLoadFailViewId(), listener);
-        }
+    public void setLoadFailOnClickListener(View.OnClickListener listener) {
+        this.listener = listener;
     }
 
     /**
