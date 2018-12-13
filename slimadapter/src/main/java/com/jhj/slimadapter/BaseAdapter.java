@@ -151,10 +151,8 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
     @SuppressWarnings("unchecked")
     public Adapter setDataList(List<?> dataList) {
         this.dataList = dataList;
-        if (onLoadMoreListener != null) {
-            loadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_LOADING);
-        }
         notifyDataSetChanged();
+        resetLoadMoreStates();
         return (Adapter) this;
     }
 
@@ -163,6 +161,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
         int startIndex = this.dataList.size() + getHeaderViewCount();
         this.dataList.addAll(dataList);
         notifyItemRangeInserted(startIndex, dataList.size());
+        resetLoadMoreStates();
         return (Adapter) this;
     }
 
@@ -170,6 +169,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
     public Adapter addDataList(int index, List<?> dataList) {
         this.dataList.addAll(index, dataList);
         notifyItemRangeInserted(index + getHeaderViewCount(), dataList.size());
+        resetLoadMoreStates();
         return (Adapter) this;
     }
 
@@ -178,6 +178,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
         int startIndex = this.dataList.size() + getHeaderViewCount();
         this.dataList.add(data);
         notifyItemInserted(startIndex);
+        resetLoadMoreStates();
         return (Adapter) this;
     }
 
@@ -185,6 +186,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
     public Adapter addData(int index, Object data) {
         this.dataList.add(index, data);
         notifyItemInserted(index + getHeaderViewCount());
+        resetLoadMoreStates();
         return (Adapter) this;
     }
 
@@ -320,6 +322,13 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
         loadMoreView.setLoadFailOnClickListener(listener);
     }
 
+    private void resetLoadMoreStates() {
+        if (onLoadMoreListener != null) {
+            loadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_LOADING);
+            notifyItemChanged(getLoadMoreViewPosition());
+        }
+    }
+
 
     //======empty view =======
     //设置Empty　View 时，该View只在header 、footer、dataList的大小都是０时显示
@@ -440,7 +449,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
 
         } else if (isShowLoadMoreView(position)) {
 
-            autoLoadMore(position);
+            autoLoadMore();
             loadMoreView.convert(holder);
         }
 
@@ -593,15 +602,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
 
 
     @SuppressWarnings("unchecked")
-    private void autoLoadMore(int position) {
-
-        if (!isShowLoadMoreView(position)) {
-            return;
-        }
-
-        if (position < getItemCount() - 1) {
-            return;
-        }
+    private void autoLoadMore() {
 
         if (loadMoreView.getLoadMoreStatus() != LoadMoreView.STATUS_LOADING) {
             return;
