@@ -3,6 +3,7 @@ package com.jhj.adapterdemo;
 import android.app.Application;
 
 import com.jhj.httplibrary.HttpCall;
+import com.zgdj.slimadapterkt.SlimAdapter;
 
 
 /**

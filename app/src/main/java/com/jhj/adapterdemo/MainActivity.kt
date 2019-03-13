@@ -4,11 +4,16 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
+import android.view.View
+import com.jhj.adapterdemo.bean.MultiBean
 import com.jhj.adapterdemo.ui.*
-import com.jhj.slimadapter.SlimAdapter
-import com.jhj.slimadapter.callback.ItemViewBind
-import com.jhj.slimadapter.holder.ViewInjector
 import com.jhj.slimadapter.itemdecoration.LineItemDecoration
+import com.zgdj.slimadapterkt.SlimAdapter
+import com.zgdj.slimadapterkt.callback.ItemViewBind
+import com.zgdj.slimadapterkt.holder.ViewInjector
+import com.zgdj.slimadapterkt.listener.OnItemClickListener
+
 import kotlinx.android.synthetic.main.activity_recyclerview.*
 import org.jetbrains.anko.startActivity
 
@@ -38,25 +43,30 @@ class MainActivity : AppCompatActivity() {
         val list = arrayListOf<String>("普通布局", "不同数据类型布局", "同数据类型不同显示样式", "带标题和结尾布局",
                 "加载更多", "没有数据的布局", "拖拽和滑动删除", "滑动菜单")
 
+
         SlimAdapter.creator(LinearLayoutManager(this))
-                .register<String>(R.layout.list_item_white) { injector, bean, position ->
-                    injector.text(R.id.textView, bean)
-                }
+                .register(R.layout.list_item_white, object : ItemViewBind<String> {
+                    override fun convert(injector: ViewInjector, bean: String, position: Int) {
+                        injector.text(R.id.textView, bean)
+                    }
+                })
                 .attachTo(recyclerView)
                 .addItemDecoration(LineItemDecoration())
                 .setDataList(list)
-                .setOnItemClickListener { recyclerView, view, position ->
-                    when (position) {
-                        0 -> startActivity<CommonActivity>()
-                        1 -> startActivity<DifferentDataTypeActivity>()
-                        2 -> startActivity<MultiActivity>()
-                        3 -> startActivity<HeaderAndFooterActivity>()
-                        4 -> startActivity<LoadMoreActivity>()
-                        5 -> startActivity<EmptyViewActivity>()
-                        6 -> startActivity<DragActivity>()
-                        7 -> startActivity<SwipeMenuActivity>()
+                .setOnItemClickListener(object : OnItemClickListener {
+                    override fun onItemClicked(recyclerView: RecyclerView, view: View, position: Int) {
+                        when (position) {
+                            0 -> startActivity<CommonActivity>()
+                            1 -> startActivity<DifferentDataTypeActivity>()
+                            2 -> startActivity<MultiActivity>()
+                            3 -> startActivity<HeaderAndFooterActivity>()
+                            4 -> startActivity<LoadMoreActivity>()
+                            5 -> startActivity<EmptyViewActivity>()
+                            6 -> startActivity<DragActivity>()
+                            7 -> startActivity<SwipeMenuActivity>()
+                        }
                     }
-                }
+                })
 
 
     }

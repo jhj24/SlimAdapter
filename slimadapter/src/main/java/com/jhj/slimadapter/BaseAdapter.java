@@ -69,6 +69,9 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
     private boolean footerWholeLine = true;
 
     public List getDataList() {
+        if (dataList == null) {
+            throw new NullPointerException("DataList is null,Please use setDataList()");
+        }
         return dataList;
     }
 
@@ -141,10 +144,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
 
     @SuppressWarnings("unchecked")
     public Adapter addItemDecoration(RecyclerView.ItemDecoration itemDecoration) {
-        if (recyclerView == null) {
-            throw new NullPointerException("RecyclerView is null,Please use this method after attachTo(recyclerView)");
-        }
-        recyclerView.addItemDecoration(itemDecoration);
+        getRecyclerView().addItemDecoration(itemDecoration);
         return (Adapter) this;
     }
 
@@ -158,8 +158,8 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
 
     @SuppressWarnings("unchecked")
     public Adapter addDataList(List<?> dataList) {
-        int startIndex = this.dataList.size() + getHeaderViewCount();
-        this.dataList.addAll(dataList);
+        int startIndex = getDataList().size() + getHeaderViewCount();
+        getDataList().addAll(dataList);
         notifyItemRangeInserted(startIndex, dataList.size());
         resetLoadMoreStates();
         return (Adapter) this;
@@ -167,7 +167,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
 
     @SuppressWarnings("unchecked")
     public Adapter addDataList(int index, List<?> dataList) {
-        this.dataList.addAll(index, dataList);
+        getDataList().addAll(index, dataList);
         notifyItemRangeInserted(index + getHeaderViewCount(), dataList.size());
         resetLoadMoreStates();
         return (Adapter) this;
@@ -175,8 +175,8 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
 
     @SuppressWarnings("unchecked")
     public Adapter addData(Object data) {
-        int startIndex = this.dataList.size() + getHeaderViewCount();
-        this.dataList.add(data);
+        int startIndex = getDataList().size() + getHeaderViewCount();
+        getDataList().add(data);
         notifyItemInserted(startIndex);
         resetLoadMoreStates();
         return (Adapter) this;
@@ -184,7 +184,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
 
     @SuppressWarnings("unchecked")
     public Adapter addData(int index, Object data) {
-        this.dataList.add(index, data);
+        getDataList().add(index, data);
         notifyItemInserted(index + getHeaderViewCount());
         resetLoadMoreStates();
         return (Adapter) this;
@@ -193,10 +193,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
 
     @SuppressWarnings("unchecked")
     public Adapter remove(int index) {
-        if (dataList == null) {
-            throw new NullPointerException("dataList is null,Please use this method after setDataList(ArrayList<?>)");
-        }
-        this.dataList.remove(index);
+        getDataList().remove(index);
         notifyItemChanged(index + headerItemViewList.size());
         return (Adapter) this;
     }
@@ -433,16 +430,16 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
 
         if (bodyPosition >= 0 && bodyPosition < getDataListCount()) {//body
 
-            Object data = dataList.get(bodyPosition);
+            Object data = getDataList().get(bodyPosition);
 
             if (data instanceof MultiItemTypeModel) {
                 ItemViewDelegate itemView = multiViewMap.get(((MultiItemTypeModel) data).getItemType());
-                if (itemView != null){
+                if (itemView != null) {
                     itemView.injector(holder.getViewInjector(), data, position);
                 }
             } else {
                 ItemViewDelegate itemView = itemViewMap.get(data.getClass());
-                if (itemView != null){
+                if (itemView != null) {
                     itemView.injector(holder.getViewInjector(), data, position);
                 }
             }
@@ -458,8 +455,8 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
             @Override
             public void onClick(View v) {
                 if (onItemClickListener != null) {
-                    int position = recyclerView.getChildAdapterPosition(v);
-                    onItemClickListener.onItemClicked(recyclerView, v, position);
+                    int position = getRecyclerView().getChildAdapterPosition(v);
+                    onItemClickListener.onItemClicked(getRecyclerView(), v, position);
                 }
             }
         });
@@ -472,8 +469,8 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
             @Override
             public boolean onLongClick(View v) {
                 if (onItemLongClickListener != null) {
-                    int position = recyclerView.getChildAdapterPosition(v);
-                    return onItemLongClickListener.onItemLongClicked(recyclerView, v, position);
+                    int position = getRecyclerView().getChildAdapterPosition(v);
+                    return onItemLongClickListener.onItemLongClicked(getRecyclerView(), v, position);
                 }
                 return false;
             }
@@ -490,7 +487,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
             return HEADER_VIEW_TYPE - position;
 
         } else if (bodyPosition >= 0 && bodyPosition < getDataListCount()) { //body
-            Object item = dataList.get(bodyPosition);
+            Object item = getDataList().get(bodyPosition);
             if (item instanceof MultiItemTypeModel) { //多样式布局
                 return ((MultiItemTypeModel) item).getItemType();
 
@@ -611,7 +608,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
         loadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_LOADING);
 
         if (recyclerView != null) {
-            recyclerView.post(new Runnable() {
+            getRecyclerView().post(new Runnable() {
                 @Override
                 public void run() {
                     onLoadMoreListener.onLoadMore((Adapter) BaseAdapter.this);
@@ -622,7 +619,6 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
         }
 
     }
-
 
 
     /**
@@ -640,10 +636,10 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
     }
 
     private int getDataListCount() {
-        if (dataList == null) {
+        if (getDataList() == null) {
             return 0;
         } else {
-            return dataList.size();
+            return getDataList().size();
         }
     }
 
@@ -675,7 +671,7 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
                         return actualType;
                     } else {
                         throw new IllegalArgumentException("The generic type argument of Slim is NOT support " +
-                                "Generic Parameterized Type now, Please using a WRAPPER class install of it directly.");
+                                "Generic Parameterized Type now, Please getGenericActualType() method return Actual type.");
                     }
                 }
             }
