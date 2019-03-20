@@ -36,13 +36,13 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        val list = arrayListOf<String>("普通布局", "不同数据类型布局", "同数据类型不同显示样式", "带标题和结尾布局",
+        val list = arrayListOf("普通布局", "不同数据类型布局", "同数据类型不同显示样式", "带标题和结尾布局",
                 "加载更多", "没有数据的布局", "拖拽和滑动删除", "滑动菜单")
 
 
         SlimAdapter.creator(LinearLayoutManager(this))
                 .register(R.layout.list_item_white, object : ItemViewBind<String> {
-                    override fun convert(injector: ViewInjector, bean: String, position: Int) {
+                    override fun convert(adapter: SlimAdapter, injector: ViewInjector, bean: String, position: Int) {
                         injector.text(R.id.textView, bean)
                                 .clicked(View.OnClickListener {
                                     when (position) {
@@ -57,6 +57,8 @@ class MainActivity : AppCompatActivity() {
                                     }
                                 })
                     }
+
+
                 })
                 .attachTo(recyclerView)
                 .addItemDecoration(LineItemDecoration())

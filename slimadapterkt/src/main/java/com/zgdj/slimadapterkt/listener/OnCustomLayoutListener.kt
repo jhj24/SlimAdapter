@@ -2,7 +2,7 @@ package com.zgdj.slimadapterkt.listener
 
 import android.view.View
 
-import com.zgdj.slimadapterkt.BaseAdapter
+import com.zgdj.slimadapterkt.SlimAdapter
 
 
 /**
@@ -12,6 +12,6 @@ import com.zgdj.slimadapterkt.BaseAdapter
  * Created by jhj on 18-10-11.
  */
 
-interface OnCustomLayoutListener<T : BaseAdapter<T>> {
-    fun onLayout(adapter: T, view: View)
+interface OnCustomLayoutListener {
+    fun onLayout(adapter: SlimAdapter, view: View)
 }

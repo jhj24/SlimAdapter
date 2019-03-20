@@ -4,20 +4,17 @@ import android.graphics.Canvas
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
-
-import com.zgdj.slimadapterkt.DraggableAdapter
+import com.zgdj.slimadapterkt.SlimAdapter
 import com.zgdj.slimadapterkt.listener.OnItemDragListener
 import com.zgdj.slimadapterkt.listener.OnItemSwipeListener
-import java.util.ArrayList
-
-import java.util.Collections
+import java.util.*
 
 /**
  * 实现　recyclerView 可拖拽滑动
  * Created by jhj on 18-10-23.
  */
 
-class ItemTouchHelperCallback(private val mAdapter: DraggableAdapter) : ItemTouchHelper.Callback() {
+class ItemTouchHelperCallback(private val mAdapter: SlimAdapter) : ItemTouchHelper.Callback() {
 
     private var dragListener: OnItemDragListener? = null
     private var swipeListener: OnItemSwipeListener? = null
@@ -185,7 +182,7 @@ class ItemTouchHelperCallback(private val mAdapter: DraggableAdapter) : ItemTouc
      * @return boolean
      */
     override fun isLongPressDragEnabled(): Boolean {
-        return mAdapter.isLongPressDragEnable
+        return mAdapter.getLongPressDragEnable()
     }
 
 
@@ -195,7 +192,7 @@ class ItemTouchHelperCallback(private val mAdapter: DraggableAdapter) : ItemTouc
      * @return boolean
      */
     override fun isItemViewSwipeEnabled(): Boolean {
-        return mAdapter.isItemSwipeEnable
+        return mAdapter.getItemSwipeEnable()
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.zgdj.slimadapterkt.callback
 
+import com.zgdj.slimadapterkt.SlimAdapter
 import com.zgdj.slimadapterkt.holder.ViewInjector
 
 
@@ -12,6 +13,6 @@ import com.zgdj.slimadapterkt.holder.ViewInjector
 
 interface ItemViewBind<in D> {
 
-    fun convert(injector: ViewInjector, bean: D, position: Int)
+    fun convert(adapter: SlimAdapter, injector: ViewInjector, bean: D, position: Int)
 
 }

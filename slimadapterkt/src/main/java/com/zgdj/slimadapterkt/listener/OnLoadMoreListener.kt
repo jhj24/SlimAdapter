@@ -1,7 +1,7 @@
 package com.zgdj.slimadapterkt.listener
 
 
-import com.zgdj.slimadapterkt.BaseAdapter
+import com.zgdj.slimadapterkt.SlimAdapter
 
 /**
  * 加载更多
@@ -10,7 +10,7 @@ import com.zgdj.slimadapterkt.BaseAdapter
  * Created by jhj on 18-10-16.
  */
 
-interface OnLoadMoreListener<T : BaseAdapter<T>> {
+interface OnLoadMoreListener {
 
-    fun onLoadMore(adapter: T)
+    fun onLoadMore(adapter: SlimAdapter)
 }
