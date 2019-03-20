@@ -4,15 +4,13 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.view.View
 import android.widget.TextView
 import com.jhj.adapterdemo.R
 import com.jhj.slimadapter.DraggableAdapter
-import com.jhj.slimadapter.callback.ItemViewBind
-import com.jhj.slimadapter.holder.ViewInjector
 import com.jhj.slimadapter.itemdecoration.LineItemDecoration
 import com.jhj.slimadapter.listener.OnItemDragListener
 import kotlinx.android.synthetic.main.activity_recyclerview.*
-import org.jetbrains.anko.toast
 
 /**
  * 拖拽、滑动删除
@@ -32,13 +30,9 @@ class DragActivity : AppCompatActivity() {
         DraggableAdapter.creator(LinearLayoutManager(this))
                 .register<String>(R.layout.list_item_putple) { injector, bean, position ->
                     injector.text(R.id.textView, bean.toString())
-                }
-                .setOnItemClickListener { recyclerView, view, position ->
-                    toast(position.toString() + "——>" + dataList[position])
-                }
-                .setOnItemLongClickListener { recyclerView, view, position ->
-                    toast(".....")
-                    true
+                            .clicked(View.OnClickListener {
+
+                            })
                 }
                 .attachTo(recyclerView)
                 .addItemDecoration(LineItemDecoration())

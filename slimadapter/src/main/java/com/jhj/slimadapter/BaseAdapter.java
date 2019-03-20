@@ -18,8 +18,6 @@ import com.jhj.slimadapter.callback.ItemViewDelegate;
 import com.jhj.slimadapter.holder.SlimViewHolder;
 import com.jhj.slimadapter.holder.ViewInjector;
 import com.jhj.slimadapter.listener.OnCustomLayoutListener;
-import com.jhj.slimadapter.listener.OnItemClickListener;
-import com.jhj.slimadapter.listener.OnItemLongClickListener;
 import com.jhj.slimadapter.listener.OnLoadMoreListener;
 import com.jhj.slimadapter.model.MultiItemTypeModel;
 import com.jhj.slimadapter.more.LoadMoreView;
@@ -62,8 +60,6 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
     private View emptyItemView;
 
 
-    private OnItemClickListener onItemClickListener;
-    private OnItemLongClickListener onItemLongClickListener;
     private OnLoadMoreListener<Adapter> onLoadMoreListener;
     private boolean headerWholeLine = true;
     private boolean footerWholeLine = true;
@@ -354,19 +350,6 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
         return (Adapter) this;
     }
 
-    // ======= listener =======
-    @SuppressWarnings("unchecked")
-    public Adapter setOnItemClickListener(OnItemClickListener listener) {
-        this.onItemClickListener = listener;
-        return (Adapter) this;
-    }
-
-    @SuppressWarnings("unchecked")
-    public Adapter setOnItemLongClickListener(OnItemLongClickListener listener) {
-        this.onItemLongClickListener = listener;
-        return (Adapter) this;
-    }
-
     private Type getGenericActualType() {
         return genericActualType;
     }
@@ -449,32 +432,6 @@ public abstract class BaseAdapter<Adapter extends BaseAdapter<Adapter>> extends 
             autoLoadMore();
             loadMoreView.convert(holder);
         }
-
-
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (onItemClickListener != null) {
-                    int position = getRecyclerView().getChildAdapterPosition(v);
-                    onItemClickListener.onItemClicked(getRecyclerView(), v, position);
-                }
-            }
-        });
-
-        /*
-         * 当同时设置了recyclerView 点击和长按事件时，记得要设置长按返回true对事件进行拦截，
-         * 否则recyclerView执行完长按事件后会执行点击事件。
-         */
-        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                if (onItemLongClickListener != null) {
-                    int position = getRecyclerView().getChildAdapterPosition(v);
-                    return onItemLongClickListener.onItemLongClicked(getRecyclerView(), v, position);
-                }
-                return false;
-            }
-        });
     }
 
     @Override

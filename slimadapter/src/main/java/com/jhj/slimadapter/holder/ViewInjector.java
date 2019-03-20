@@ -107,9 +107,18 @@ public class ViewInjector {
         return this;
     }
 
+    public ViewInjector clicked(View.OnClickListener listener) {
+        holder.itemView.setOnClickListener(listener);
+        return this;
+    }
 
     public ViewInjector clicked(int id, View.OnClickListener listener) {
         getView(id).setOnClickListener(listener);
+        return this;
+    }
+
+    public ViewInjector longClicked(View.OnLongClickListener listener) {
+        holder.itemView.setOnLongClickListener(listener);
         return this;
     }
 
@@ -151,7 +160,6 @@ public class ViewInjector {
         viewGroup.removeView(view);
         return this;
     }
-
 
 
     public interface ViewAction<V extends View> {
