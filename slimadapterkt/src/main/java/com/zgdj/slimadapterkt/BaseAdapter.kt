@@ -17,8 +17,6 @@ import com.zgdj.slimadapterkt.callback.ItemViewDelegate
 import com.zgdj.slimadapterkt.holder.SlimViewHolder
 import com.zgdj.slimadapterkt.holder.ViewInjector
 import com.zgdj.slimadapterkt.listener.OnCustomLayoutListener
-import com.zgdj.slimadapterkt.listener.OnItemClickListener
-import com.zgdj.slimadapterkt.listener.OnItemLongClickListener
 import com.zgdj.slimadapterkt.listener.OnLoadMoreListener
 import com.zgdj.slimadapterkt.model.MultiItemTypeModel
 import com.zgdj.slimadapterkt.more.LoadMoreView
@@ -53,8 +51,6 @@ abstract class BaseAdapter<Adapter : BaseAdapter<Adapter>> : RecyclerView.Adapte
     private var emptyItemView: View? = null
 
 
-    private var onItemClickListener: OnItemClickListener? = null
-    private var onItemLongClickListener: OnItemLongClickListener? = null
     private var onLoadMoreListener: OnLoadMoreListener<Adapter>? = null
     private var headerWholeLine = true
     private var footerWholeLine = true
@@ -312,16 +308,6 @@ abstract class BaseAdapter<Adapter : BaseAdapter<Adapter>> : RecyclerView.Adapte
         return this as Adapter
     }
 
-    // ======= listener =======
-    fun setOnItemClickListener(listener: OnItemClickListener): Adapter {
-        this.onItemClickListener = listener
-        return this as Adapter
-    }
-
-    fun setOnItemLongClickListener(listener: OnItemLongClickListener): Adapter {
-        this.onItemLongClickListener = listener
-        return this as Adapter
-    }
 
     private fun getGenericActualType(): Type? {
         return genericActualType
@@ -393,26 +379,6 @@ abstract class BaseAdapter<Adapter : BaseAdapter<Adapter>> : RecyclerView.Adapte
             autoLoadMore()
             loadMoreView.convert(holder)
         }
-
-
-        holder.itemView.setOnClickListener { v ->
-            onItemClickListener?.let {
-                val pos = getRecyclerView().getChildAdapterPosition(v)
-                it.onItemClicked(getRecyclerView(), v, pos)
-            }
-        }
-
-        /*
-         * 当同时设置了recyclerView 点击和长按事件时，记得要设置长按返回true对事件进行拦截，
-         * 否则recyclerView执行完长按事件后会执行点击事件。
-         */
-        holder.itemView.setOnLongClickListener(View.OnLongClickListener { v ->
-            onItemLongClickListener?.let {
-                val pos = getRecyclerView().getChildAdapterPosition(v)
-                return@OnLongClickListener it.onItemLongClicked(getRecyclerView(), v, pos)
-            }
-            return@OnLongClickListener false
-        })
     }
 
     override fun getItemViewType(position: Int): Int {

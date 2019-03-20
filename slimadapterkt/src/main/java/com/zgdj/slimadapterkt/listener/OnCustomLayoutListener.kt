@@ -12,6 +12,6 @@ import com.zgdj.slimadapterkt.BaseAdapter
  * Created by jhj on 18-10-11.
  */
 
-interface OnCustomLayoutListener<T : BaseAdapter<*>> {
+interface OnCustomLayoutListener<T : BaseAdapter<T>> {
     fun onLayout(adapter: T, view: View)
 }

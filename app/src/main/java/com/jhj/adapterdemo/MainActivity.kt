@@ -4,16 +4,12 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.View
-import com.jhj.adapterdemo.bean.MultiBean
 import com.jhj.adapterdemo.ui.*
 import com.jhj.slimadapter.itemdecoration.LineItemDecoration
 import com.zgdj.slimadapterkt.SlimAdapter
 import com.zgdj.slimadapterkt.callback.ItemViewBind
 import com.zgdj.slimadapterkt.holder.ViewInjector
-import com.zgdj.slimadapterkt.listener.OnItemClickListener
-
 import kotlinx.android.synthetic.main.activity_recyclerview.*
 import org.jetbrains.anko.startActivity
 
@@ -48,25 +44,23 @@ class MainActivity : AppCompatActivity() {
                 .register(R.layout.list_item_white, object : ItemViewBind<String> {
                     override fun convert(injector: ViewInjector, bean: String, position: Int) {
                         injector.text(R.id.textView, bean)
+                                .clicked(View.OnClickListener {
+                                    when (position) {
+                                        0 -> startActivity<CommonActivity>()
+                                        1 -> startActivity<DifferentDataTypeActivity>()
+                                        2 -> startActivity<MultiActivity>()
+                                        3 -> startActivity<HeaderAndFooterActivity>()
+                                        4 -> startActivity<LoadMoreActivity>()
+                                        5 -> startActivity<EmptyViewActivity>()
+                                        6 -> startActivity<DragActivity>()
+                                        7 -> startActivity<SwipeMenuActivity>()
+                                    }
+                                })
                     }
                 })
                 .attachTo(recyclerView)
                 .addItemDecoration(LineItemDecoration())
                 .setDataList(list)
-                .setOnItemClickListener(object : OnItemClickListener {
-                    override fun onItemClicked(recyclerView: RecyclerView, view: View, position: Int) {
-                        when (position) {
-                            0 -> startActivity<CommonActivity>()
-                            1 -> startActivity<DifferentDataTypeActivity>()
-                            2 -> startActivity<MultiActivity>()
-                            3 -> startActivity<HeaderAndFooterActivity>()
-                            4 -> startActivity<LoadMoreActivity>()
-                            5 -> startActivity<EmptyViewActivity>()
-                            6 -> startActivity<DragActivity>()
-                            7 -> startActivity<SwipeMenuActivity>()
-                        }
-                    }
-                })
 
 
     }

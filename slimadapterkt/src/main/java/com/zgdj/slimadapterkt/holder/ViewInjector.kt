@@ -101,8 +101,18 @@ class ViewInjector(private val holder: SlimViewHolder) {
     }
 
 
+    fun clicked(listener: View.OnClickListener): ViewInjector {
+        holder.itemView.setOnClickListener(listener)
+        return this
+    }
+
     fun clicked(id: Int, listener: View.OnClickListener): ViewInjector {
         getView<View>(id).setOnClickListener(listener)
+        return this
+    }
+
+    fun longClicked(listener: View.OnLongClickListener): ViewInjector {
+        holder.itemView.setOnLongClickListener(listener)
         return this
     }
 
@@ -115,8 +125,6 @@ class ViewInjector(private val holder: SlimViewHolder) {
         getView<View>(id).isEnabled = enable
         return this
     }
-
-
 
 
     fun addView(id: Int, vararg views: View): ViewInjector {
