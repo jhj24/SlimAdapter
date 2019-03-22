@@ -17,10 +17,8 @@ import com.zgdj.slimadapterkt.callback.ItemViewDelegate
 import com.zgdj.slimadapterkt.holder.SlimViewHolder
 import com.zgdj.slimadapterkt.holder.ViewInjector
 import com.zgdj.slimadapterkt.itemtouch.ItemTouchHelperCallback
-import com.zgdj.slimadapterkt.listener.OnCustomLayoutListener
 import com.zgdj.slimadapterkt.listener.OnItemDragListener
 import com.zgdj.slimadapterkt.listener.OnItemSwipeListener
-import com.zgdj.slimadapterkt.listener.OnLoadMoreListener
 import com.zgdj.slimadapterkt.model.MultiItemTypeModel
 import com.zgdj.slimadapterkt.more.LoadMoreView
 import com.zgdj.slimadapterkt.more.SimpleLoadMoreView
@@ -50,8 +48,7 @@ class SlimAdapter private constructor(manager: RecyclerView.LayoutManager) : Rec
     private var loadMoreView: LoadMoreView = SimpleLoadMoreView()
     private var emptyItemView: View? = null
 
-
-    private var onLoadMoreListener: OnLoadMoreListener? = null
+    private var blockLoadMore: ((SlimAdapter) -> Unit)? = null
     private var isHeaderWholeLine = true
     private var isFooterWholeLine = true
 
@@ -182,9 +179,9 @@ class SlimAdapter private constructor(manager: RecyclerView.LayoutManager) : Rec
 
     // ======================================= header ================================
 
-    fun addHeader(context: Context, layoutRes: Int, listener: OnCustomLayoutListener): SlimAdapter {
+    fun addHeader(context: Context, layoutRes: Int, block: (SlimAdapter, View) -> Unit): SlimAdapter {
         val view = LayoutInflater.from(context).inflate(layoutRes, null, false)
-        listener.onLayout(this, view)
+        block(this, view)
         return addHeader(view)
     }
 
@@ -217,9 +214,9 @@ class SlimAdapter private constructor(manager: RecyclerView.LayoutManager) : Rec
     }
 
     //====================================== footer ==============================
-    fun addFooter(context: Context, layoutRes: Int, listener: OnCustomLayoutListener): SlimAdapter {
+    fun addFooter(context: Context, layoutRes: Int, block: (SlimAdapter, View) -> Unit): SlimAdapter {
         val view = LayoutInflater.from(context).inflate(layoutRes, null, false)
-        listener.onLayout(this, view)
+        block(this, view)
         return addFooter(view)
     }
 
@@ -254,8 +251,8 @@ class SlimAdapter private constructor(manager: RecyclerView.LayoutManager) : Rec
 
     //============================= load more ===============================
 
-    fun setOnLoadMoreListener(onLoadMoreListener: OnLoadMoreListener): SlimAdapter {
-        this.onLoadMoreListener = onLoadMoreListener
+    fun setOnLoadMoreListener(block: (SlimAdapter) -> Unit): SlimAdapter {
+        this.blockLoadMore = block
         return this
     }
 
@@ -265,7 +262,7 @@ class SlimAdapter private constructor(manager: RecyclerView.LayoutManager) : Rec
     }
 
     fun loadMoreEnd() {
-        if (onLoadMoreListener == null || loadMoreViewPosition == 0) {
+        if (blockLoadMore == null || loadMoreViewPosition == 0) {
             return
         }
         loadMoreView.loadMoreStatus = LoadMoreView.STATUS_END
@@ -274,7 +271,7 @@ class SlimAdapter private constructor(manager: RecyclerView.LayoutManager) : Rec
 
 
     fun loadMoreFail() {
-        if (onLoadMoreListener == null || loadMoreViewPosition == 0) {
+        if (blockLoadMore == null || loadMoreViewPosition == 0) {
             return
         }
         loadMoreView.loadMoreStatus = LoadMoreView.STATUS_FAIL
@@ -287,7 +284,7 @@ class SlimAdapter private constructor(manager: RecyclerView.LayoutManager) : Rec
     }
 
     private fun resetLoadMoreStates() {
-        if (onLoadMoreListener != null) {
+        if (blockLoadMore != null) {
             loadMoreView.loadMoreStatus = LoadMoreView.STATUS_LOADING
             notifyItemChanged(loadMoreViewPosition)
         }
@@ -297,9 +294,9 @@ class SlimAdapter private constructor(manager: RecyclerView.LayoutManager) : Rec
     //==================================empty view ================================
     //设置Empty　View 时，该View只在header 、footer、dataList的大小都是０时显示
 
-    fun setEmptyView(context: Context, layoutRes: Int, listener: OnCustomLayoutListener): SlimAdapter {
+    fun setEmptyView(context: Context, layoutRes: Int, block: (SlimAdapter, View) -> Unit): SlimAdapter {
         val view = LayoutInflater.from(context).inflate(layoutRes, null, false)
-        listener.onLayout(this, view)
+        block(this, view)
         setEmptyView(view)
         return this
     }
@@ -498,7 +495,7 @@ class SlimAdapter private constructor(manager: RecyclerView.LayoutManager) : Rec
         if (emptyItemView != null && loadMoreViewPosition == 0) {
             return 1
         }
-        return if (onLoadMoreListener != null) {
+        return if (blockLoadMore != null) {
             if (loadMoreViewPosition == 0) {
                 0
             } else {
@@ -579,9 +576,11 @@ class SlimAdapter private constructor(manager: RecyclerView.LayoutManager) : Rec
         loadMoreView.loadMoreStatus = LoadMoreView.STATUS_LOADING
 
         if (recyclerView != null) {
-            getRecyclerView().post { onLoadMoreListener?.onLoadMore(this@SlimAdapter) }
+            getRecyclerView().post {
+                blockLoadMore?.invoke(this@SlimAdapter)
+            }
         } else {
-            onLoadMoreListener?.onLoadMore(this)
+            blockLoadMore?.invoke(this@SlimAdapter)
         }
 
     }
@@ -594,7 +593,7 @@ class SlimAdapter private constructor(manager: RecyclerView.LayoutManager) : Rec
      * @return boolean
      */
     private fun isShowLoadMoreView(position: Int): Boolean {
-        return onLoadMoreListener != null && position != 0 && position == loadMoreViewPosition
+        return blockLoadMore != null && position != 0 && position == loadMoreViewPosition
     }
 
     private fun setFullSpan(holder: RecyclerView.ViewHolder) {
