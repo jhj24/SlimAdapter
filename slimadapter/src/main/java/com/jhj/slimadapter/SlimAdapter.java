@@ -202,7 +202,7 @@ public class SlimAdapter extends RecyclerView.Adapter<SlimViewHolder> {
     @SuppressWarnings("unchecked")
     public SlimAdapter remove(int index) {
         this.dataList.remove(index);
-        notifyItemChanged(index + headerItemViewList.size());
+        notifyItemRemoved(index + headerItemViewList.size());
         return this;
     }
 
