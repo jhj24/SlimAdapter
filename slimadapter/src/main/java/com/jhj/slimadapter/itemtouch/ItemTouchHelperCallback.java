@@ -5,7 +5,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
-import com.jhj.slimadapter.DraggableAdapter;
+import com.jhj.slimadapter.SlimAdapter;
 import com.jhj.slimadapter.listener.OnItemDragListener;
 import com.jhj.slimadapter.listener.OnItemSwipeListener;
 
@@ -18,7 +18,7 @@ import java.util.Collections;
 
 public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
 
-    private DraggableAdapter mAdapter;
+    private SlimAdapter mAdapter;
 
     private OnItemDragListener dragListener;
     private OnItemSwipeListener swipeListener;
@@ -33,7 +33,7 @@ public class ItemTouchHelperCallback extends ItemTouchHelper.Callback {
     private boolean isSwipeFadeOutAnim = true;
 
 
-    public ItemTouchHelperCallback(DraggableAdapter mAdapter) {
+    public ItemTouchHelperCallback(SlimAdapter mAdapter) {
         this.mAdapter = mAdapter;
     }
 

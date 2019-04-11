@@ -4,9 +4,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import com.jhj.adapterdemo.R
-import com.jhj.slimadapter.DraggableAdapter
-import com.jhj.slimadapter.callback.ItemViewBind
-import com.jhj.slimadapter.holder.ViewInjector
+import com.jhj.slimadapter.SlimAdapter
 import com.jhj.slimadapter.itemdecoration.LineItemDecoration
 import com.jhj.slimadapter.widget.SwipeMenuLayout
 import kotlinx.android.synthetic.main.activity_recyclerview.*
@@ -25,8 +23,9 @@ class SwipeMenuActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recyclerview)
 
-        DraggableAdapter.creator(LinearLayoutManager(this))
-                .register<String>(R.layout.list_item_swipe_menu) { injector, bean, position ->
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        SlimAdapter.creator()
+                .register<String>(R.layout.list_item_swipe_menu) { adapter, injector, bean, position ->
                     val a = injector.getView<SwipeMenuLayout>(R.id.swipeMenuLayout)
                     injector.text(R.id.tv_content, bean)
                             .clicked(R.id.tv_delete) {

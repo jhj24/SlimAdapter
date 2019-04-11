@@ -20,10 +20,10 @@ class CommonActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recyclerview)
-
-        SlimAdapter.creator(LinearLayoutManager(this))
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        SlimAdapter.creator()
                 .register<String>(R.layout.list_item_white) {
-                    injector, bean, position -> injector.text(R.id.textView, bean)
+                    adapter,injector, bean, position -> injector.text(R.id.textView, bean)
                 }
                 .attachTo(recyclerView)
                 .addItemDecoration(LineItemDecoration())

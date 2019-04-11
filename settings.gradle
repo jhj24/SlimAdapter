@@ -1,1 +1,1 @@
-include ':app', ':slimadapter', ':slimadapterkt'
+include ':app', ':slimadapter'

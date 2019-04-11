@@ -27,9 +27,9 @@ class LoadMoreActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recyclerview)
 
-
-        val adapter = SlimAdapter.creator(LinearLayoutManager(this))
-                .register<ApplyBean>(R.layout.list_item_white) { injector, bean, position ->
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        val adapter = SlimAdapter.creator()
+                .register<ApplyBean>(R.layout.list_item_white) { adapter, injector, bean, position ->
                     injector.text(R.id.textView, bean?.leaveTypeName)
                 }
                 .attachTo(recyclerView)
@@ -62,9 +62,9 @@ class LoadMoreActivity : AppCompatActivity() {
                         isHasData = list?.size ?: 0 >= pageSize
                         pageNo++
                         if (i == 0) {
-                            adapter.addDataList(list)
+                            adapter.addDataList(list.orEmpty())
                         } else {
-                            adapter.setDataList(list)
+                            adapter.setDataList(list.orEmpty())
                         }
                     }
                 })

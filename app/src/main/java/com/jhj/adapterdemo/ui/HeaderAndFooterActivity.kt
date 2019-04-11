@@ -5,8 +5,6 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import com.jhj.adapterdemo.R
 import com.jhj.slimadapter.SlimAdapter
-import com.jhj.slimadapter.callback.ItemViewBind
-import com.jhj.slimadapter.holder.ViewInjector
 import com.jhj.slimadapter.itemdecoration.LineItemDecoration
 import kotlinx.android.synthetic.main.activity_recyclerview.*
 import kotlinx.android.synthetic.main.list_item_white.view.*
@@ -22,9 +20,9 @@ class HeaderAndFooterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recyclerview)
 
-
-        val adapter = SlimAdapter.creator(LinearLayoutManager(this))
-                .register<String>(R.layout.list_item_white) { injector, bean, position ->
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        val adapter = SlimAdapter.creator()
+                .register<String>(R.layout.list_item_white) { adapter, injector, bean, position ->
                     injector.text(R.id.textView, bean)
                 }
                 .attachTo(recyclerView)
@@ -40,8 +38,6 @@ class HeaderAndFooterActivity : AppCompatActivity() {
 
 
     }
-
-
 
 
 }

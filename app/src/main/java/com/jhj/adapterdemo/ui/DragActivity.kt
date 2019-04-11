@@ -7,7 +7,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.View
 import android.widget.TextView
 import com.jhj.adapterdemo.R
-import com.jhj.slimadapter.DraggableAdapter
+import com.jhj.slimadapter.SlimAdapter
 import com.jhj.slimadapter.itemdecoration.LineItemDecoration
 import com.jhj.slimadapter.listener.OnItemDragListener
 import kotlinx.android.synthetic.main.activity_recyclerview.*
@@ -26,9 +26,9 @@ class DragActivity : AppCompatActivity() {
 
         val textView = TextView(this)
         textView.text = "222"
-
-        DraggableAdapter.creator(LinearLayoutManager(this))
-                .register<String>(R.layout.list_item_putple) { injector, bean, position ->
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        SlimAdapter.creator()
+                .register<String>(R.layout.list_item_putple) { adapter, injector, bean, position ->
                     injector.text(R.id.textView, bean.toString())
                             .clicked(View.OnClickListener {
 

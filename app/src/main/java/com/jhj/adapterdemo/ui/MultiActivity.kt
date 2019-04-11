@@ -6,8 +6,6 @@ import android.support.v7.widget.LinearLayoutManager
 import com.jhj.adapterdemo.R
 import com.jhj.adapterdemo.bean.MultiBean
 import com.jhj.slimadapter.SlimAdapter
-import com.jhj.slimadapter.callback.ItemViewBind
-import com.jhj.slimadapter.holder.ViewInjector
 import com.jhj.slimadapter.itemdecoration.LineItemDecoration
 import kotlinx.android.synthetic.main.activity_recyclerview.*
 
@@ -22,12 +20,12 @@ class MultiActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recyclerview)
-
-        SlimAdapter.creator(LinearLayoutManager(this))
-                .register<MultiBean>(1, R.layout.list_item_white) { injector, bean, position ->
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        SlimAdapter.creator()
+                .register<MultiBean>(1, R.layout.list_item_white) { adapter, injector, bean, position ->
                     injector.text(R.id.textView, bean?.num.toString())
                 }
-                .register<MultiBean>(0, R.layout.list_item_putple) { injector, bean, position ->
+                .register<MultiBean>(0, R.layout.list_item_putple) { adapter, injector, bean, position ->
                     injector.text(R.id.textView, bean?.num.toString())
                 }
                 .attachTo(recyclerView)
